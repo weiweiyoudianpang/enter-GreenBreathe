@@ -1,0 +1,31 @@
+/* Content Script positioning styles - injected into page */
+#green-breathe-notification-root {
+  position: fixed;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+#green-breathe-notification-root .green-breathe-notification {
+  pointer-events: auto;
+  position: fixed;
+}
+
+#green-breathe-notification-root .top_right {
+  top: 20px;
+  right: 20px;
+}
+
+#green-breathe-notification-root .top_left {
+  top: 20px;
+  left: 20px;
+}
+
+#green-breathe-notification-root .bottom_right {
+  bottom: 20px;
+  right: 20px;
+}
+
+#green-breathe-notification-root .bottom_left {
+  bottom: 20px;
+  left: 20px;
+}
