@@ -1,15 +1,22 @@
 /* Content Script positioning styles - injected into page */
+/* 🎯 核心特性：穿透不干扰 - Pointer Events Architecture */
+
 #green-breathe-notification-root {
   position: fixed;
-  z-index: 2147483647;
-  pointer-events: none;
+  z-index: 2147483647; /* 最高层级但不阻挡交互 */
+  pointer-events: none; /* 容器完全穿透 */
+  inset: 0; /* 覆盖全屏但透明 */
 }
 
 #green-breathe-notification-root .green-breathe-notification {
-  pointer-events: auto;
+  pointer-events: auto; /* 仅通知本体可交互 */
   position: fixed;
+  /* 穿透优化：最小化遮挡区域 */
+  width: 260px;
+  max-width: calc(100vw - 40px);
 }
 
+/* 智能定位：四角自适应 */
 #green-breathe-notification-root .top_right {
   top: 20px;
   right: 20px;
@@ -28,4 +35,17 @@
 #green-breathe-notification-root .bottom_left {
   bottom: 20px;
   left: 20px;
+}
+
+/* 响应式优化：移动端避让 */
+@media (max-width: 768px) {
+  #green-breathe-notification-root .green-breathe-notification {
+    width: 200px;
+    max-width: calc(100vw - 30px);
+  }
+  
+  #green-breathe-notification-root .top_right,
+  #green-breathe-notification-root .top_left {
+    top: 60px; /* 避开移动端顶栏 */
+  }
 }

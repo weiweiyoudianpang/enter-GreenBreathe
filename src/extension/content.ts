@@ -9,12 +9,16 @@ function createNotificationContainer(): HTMLDivElement {
   return container;
 }
 
-// Check if should delay notification (智能避让)
+// 🎯 核心功能：智能避让系统 - 检测用户专注状态
+// Smart Avoidance System - Never interrupt focused work
 function shouldDelayNotification(): boolean {
-  // Check fullscreen
-  if (document.fullscreenElement) return true;
+  // 1. 全屏模式检测（演示、游戏、视频）
+  if (document.fullscreenElement) {
+    console.log('[GreenBreathe] Delayed: Fullscreen detected');
+    return true;
+  }
   
-  // Check active input
+  // 2. 输入框激活检测（正在打字）
   const activeElement = document.activeElement;
   if (
     activeElement &&
@@ -22,23 +26,86 @@ function shouldDelayNotification(): boolean {
       activeElement.tagName === 'TEXTAREA' ||
       activeElement.getAttribute('contenteditable') === 'true')
   ) {
+    console.log('[GreenBreathe] Delayed: User is typing');
     return true;
   }
   
-  // Check video playing
+  // 3. 视频播放检测（观看视频中）
   const videos = document.querySelectorAll('video');
   for (const video of videos) {
-    if (!video.paused && video.currentTime > 0) return true;
+    const rect = video.getBoundingClientRect();
+    const isVisible = rect.width > 200 && rect.height > 150; // 主视频判定
+    if (!video.paused && video.currentTime > 0 && isVisible) {
+      console.log('[GreenBreathe] Delayed: Video playing');
+      return true;
+    }
   }
   
+  // 4. 音频播放检测（听音乐、播客）
+  const audios = document.querySelectorAll('audio');
+  for (const audio of audios) {
+    if (!audio.paused && audio.currentTime > 0) {
+      console.log('[GreenBreathe] Delayed: Audio playing');
+      return true;
+    }
+  }
+  
+  // 5. 通话状态检测（视频会议）
+  const mediaDevices = navigator.mediaDevices;
+  if (mediaDevices) {
+    // 检测是否有活跃的媒体流（摄像头/麦克风）
+    const mediaStreamTrack = document.querySelector('video[autoplay]');
+    if (mediaStreamTrack) {
+      console.log('[GreenBreathe] Delayed: Video call detected');
+      return true;
+    }
+  }
+  
+  // 6. 表单提交中检测
+  const forms = document.querySelectorAll('form[data-submitting="true"]');
+  if (forms.length > 0) {
+    console.log('[GreenBreathe] Delayed: Form submitting');
+    return true;
+  }
+  
+  console.log('[GreenBreathe] ✓ Safe to show notification');
   return false;
 }
 
-// Show notification with delay retry
+// 🎯 增强功能：检测用户活跃度（避免在快速操作时打断）
+let lastMouseMove = Date.now();
+let lastScroll = Date.now();
+
+document.addEventListener('mousemove', () => {
+  lastMouseMove = Date.now();
+}, { passive: true });
+
+document.addEventListener('scroll', () => {
+  lastScroll = Date.now();
+}, { passive: true });
+
+function isUserActivelyInteracting(): boolean {
+  const now = Date.now();
+  // 如果5秒内有快速鼠标移动或滚动，认为用户正在活跃操作
+  if (now - lastMouseMove < 5000 || now - lastScroll < 5000) {
+    return true;
+  }
+  return false;
+}
+
+// 🎯 显示通知 with 智能延迟重试
 async function showNotification(data: NotificationData, retryCount = 0) {
+  // 智能避让：检测用户专注状态
   if (shouldDelayNotification() && retryCount < 3) {
-    // Retry after 30 seconds
+    console.log(`[GreenBreathe] Retry attempt ${retryCount + 1}/3 after 30s`);
     setTimeout(() => showNotification(data, retryCount + 1), 30000);
+    return;
+  }
+  
+  // 活跃度检测：如果用户正在快速操作，延迟10秒
+  if (isUserActivelyInteracting() && retryCount === 0) {
+    console.log('[GreenBreathe] User actively interacting, delaying 10s');
+    setTimeout(() => showNotification(data, retryCount), 10000);
     return;
   }
   
@@ -113,38 +180,95 @@ async function createNotificationUI(
         box-sizing: border-box;
       }
       
+      /* 🎨 水墨审美：毛玻璃 + 晕染效果 */
       .notification-card {
         width: 260px;
         background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 8px 32px rgba(100, 180, 100, 0.15);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 
+          0 8px 32px rgba(100, 180, 100, 0.12),
+          0 2px 8px rgba(100, 180, 100, 0.08);
         border: 1px solid rgba(100, 180, 100, 0.2);
-        font-family: 'Source Han Serif CN', 'Noto Serif SC', serif;
+        font-family: 'Source Han Serif CN', 'Noto Serif SC', Georgia, serif;
         opacity: 0;
-        transform: translateY(-20px);
-        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(-20px) scale(0.95);
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         position: relative;
         overflow: hidden;
+        /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
+        pointer-events: auto;
       }
       
       .notification-card.show {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
       
+      /* 🎨 水墨晕染背景 - 三层叠加 */
       .ink-wash-bg {
         position: absolute;
-        top: -20px;
-        left: -20px;
-        right: -20px;
-        bottom: -20px;
+        top: -30px;
+        left: -30px;
+        right: -30px;
+        bottom: -30px;
         background-image: url('${chrome.runtime.getURL('images/ink-wash.png')}');
-        background-size: cover;
-        opacity: 0.1;
+        background-size: 120%;
+        background-position: center;
+        opacity: 0;
         pointer-events: none;
         z-index: 0;
+        animation: inkSpread 0.8s ease-out forwards;
+      }
+      
+      @keyframes inkSpread {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        50% {
+          opacity: 0.06;
+        }
+        100% {
+          opacity: 0.12;
+          transform: scale(1);
+        }
+      }
+      
+      /* 🌱 植物成长动画容器 */
+      .plant-growth {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        opacity: 0.6;
+        pointer-events: none;
+        z-index: 2;
+      }
+      
+      .plant-svg {
+        width: 100%;
+        height: 100%;
+      }
+      
+      .plant-path {
+        stroke: #64b464;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: plantGrow 2s ease-out forwards;
+      }
+      
+      @keyframes plantGrow {
+        to {
+          stroke-dashoffset: 0;
+        }
       }
       
       .content {
