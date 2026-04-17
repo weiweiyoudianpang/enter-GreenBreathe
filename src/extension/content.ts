@@ -73,8 +73,9 @@ function shouldDelayNotification(): boolean {
 }
 
 // 🎯 增强功能：检测用户活跃度（避免在快速操作时打断）
-let lastMouseMove = Date.now();
-let lastScroll = Date.now();
+// 初始化为 0，而不是 Date.now()，否则 content 加载后5秒内永远延迟
+let lastMouseMove = 0;
+let lastScroll = 0;
 
 document.addEventListener('mousemove', () => {
   lastMouseMove = Date.now();
@@ -128,9 +129,10 @@ async function showNotification(data: NotificationData, retryCount = 0) {
   // Append notification
   container.appendChild(notification);
   
-  // Trigger entrance animation
+  // Trigger entrance animation — 必须加在 shadowRoot 内的 .notification-card 上
   setTimeout(() => {
-    notification.classList.add('show');
+    const card = notification.shadowRoot?.querySelector('.notification-card') as HTMLElement;
+    if (card) card.classList.add('show');
   }, 100);
   
   // Auto dismiss after 8 seconds
@@ -542,11 +544,16 @@ const style = document.createElement('style');
 style.textContent = `
   #green-breathe-notification-root {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 2147483647;
     pointer-events: none;
   }
   
   #green-breathe-notification-root .green-breathe-notification {
+    position: absolute;
     pointer-events: auto;
   }
   

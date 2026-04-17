@@ -1,4 +1,4 @@
-function v(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function w(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const n=document.querySelectorAll("video");for(const i of n){const a=i.getBoundingClientRect(),s=a.width>200&&a.height>150;if(!i.paused&&i.currentTime>0&&s)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const i of t)if(!i.paused&&i.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let p=Date.now(),u=Date.now();document.addEventListener("mousemove",()=>{p=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{u=Date.now()},{passive:!0});function k(){const e=Date.now();return e-p<5e3||e-u<5e3}async function d(e,n=0){if(w()&&n<3){console.log(`[GreenBreathe] Retry attempt ${n+1}/3 after 30s`),setTimeout(()=>d(e,n+1),3e4);return}if(k()&&n===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>d(e,n),1e4);return}const r=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",o=await S(e,r);let i=document.getElementById("green-breathe-notification-root");i||(i=v()),i.innerHTML="",i.appendChild(o),setTimeout(()=>{o.classList.add("show")},100),setTimeout(()=>{c(o)},8e3)}async function S(e,n){const t=document.createElement("div");t.className=`green-breathe-notification ${n}`;const r=t.attachShadow({mode:"open"}),o=await chrome.storage.local.get("userProfile");o.userProfile?.nickname;const i=o.userProfile?.mbtiType||"INFP",a=N(e,i),s=["了解啦~","知道啦","谢谢提醒","OK"],m=s[Math.floor(Math.random()*s.length)],f=T(e.taskType),h=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});r.innerHTML=`
+function v(){const t=document.createElement("div");return t.id="green-breathe-notification-root",document.body.appendChild(t),t}function w(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const t=document.activeElement;if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const n=document.querySelectorAll("video");for(const i of n){const r=i.getBoundingClientRect(),s=r.width>200&&r.height>150;if(!i.paused&&i.currentTime>0&&s)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const e=document.querySelectorAll("audio");for(const i of e)if(!i.paused&&i.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let p=0,u=0;document.addEventListener("mousemove",()=>{p=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{u=Date.now()},{passive:!0});function k(){const t=Date.now();return t-p<5e3||t-u<5e3}async function d(t,n=0){if(w()&&n<3){console.log(`[GreenBreathe] Retry attempt ${n+1}/3 after 30s`),setTimeout(()=>d(t,n+1),3e4);return}if(k()&&n===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>d(t,n),1e4);return}const a=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",o=await S(t,a);let i=document.getElementById("green-breathe-notification-root");i||(i=v()),i.innerHTML="",i.appendChild(o),setTimeout(()=>{const r=o.shadowRoot?.querySelector(".notification-card");r&&r.classList.add("show")},100),setTimeout(()=>{c(o)},8e3)}async function S(t,n){const e=document.createElement("div");e.className=`green-breathe-notification ${n}`;const a=e.attachShadow({mode:"open"}),o=await chrome.storage.local.get("userProfile");o.userProfile?.nickname;const i=o.userProfile?.mbtiType||"INFP",r=N(t,i),s=["了解啦~","知道啦","谢谢提醒","OK"],m=s[Math.floor(Math.random()*s.length)],f=T(t.taskType),h=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});a.innerHTML=`
     <style>
       * {
         margin: 0;
@@ -229,17 +229,17 @@ function v(){const e=document.createElement("div");return e.id="green-breathe-no
           <div class="time">${h}</div>
         </div>
         
-        <div class="encouragement">${e.encouragement}</div>
+        <div class="encouragement">${t.encouragement}</div>
         
         <div class="instruction-box">
           <div class="instruction">
             <span class="task-icon">${f}</span>
-            <span>${e.instruction.instruction}</span>
+            <span>${t.instruction.instruction}</span>
           </div>
           <div class="science">
-            ${a}
+            ${r}
           </div>
-          <div class="source">(${e.instruction.source})</div>
+          <div class="source">(${t.instruction.source})</div>
         </div>
         
         <div class="actions">
@@ -249,14 +249,19 @@ function v(){const e=document.createElement("div");return e.id="green-breathe-no
         </div>
       </div>
     </div>
-  `,r.querySelector(".notification-card");const b=r.querySelector(".action-dismiss"),x=r.querySelector(".action-complete"),y=r.querySelector(".action-snooze");return b?.addEventListener("click",()=>{l("dismissed",e.taskType),c(t)}),x?.addEventListener("click",()=>{l("completed",e.taskType),c(t)}),y?.addEventListener("click",()=>{l("snoozed",e.taskType),c(t)}),t}function T(e){switch(e){case"hydration":return"💧";case"eyeCare":return"👁️";case"movement":return"🏃";default:return"🌿"}}function N(e,n){const t=n.includes("T"),r=n.includes("N");let o="";return t?o=e.instruction.mbtiAdaptation.T:r?o=e.instruction.mbtiAdaptation.N:o=e.instruction.mbtiAdaptation.F,`${o} <br/><small>↑ ${e.instruction.scienceBasis}</small>`}function c(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.opacity="0",t.style.transform="translateY(-20px)"),setTimeout(()=>{e.remove()},800)}async function l(e,n){try{const t={timestamp:Date.now(),action:e,taskType:n},o=(await chrome.storage.local.get("interactionLog")).interactionLog||[];if(o.push(t),o.length>100&&o.splice(0,o.length-100),await chrome.storage.local.set({interactionLog:o}),e==="completed"){const a=(await chrome.storage.local.get("plantGrowth")).plantGrowth||{level:0,totalCompletions:0,unlockedForms:[]};a.totalCompletions+=1,a.level=Math.floor(a.totalCompletions/10),await chrome.storage.local.set({plantGrowth:a})}}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,n,t)=>{e.type==="SHOW_NOTIFICATION"&&(d(e.data),t({success:!0}))});const g=document.createElement("style");g.textContent=`
+  `,a.querySelector(".notification-card");const b=a.querySelector(".action-dismiss"),x=a.querySelector(".action-complete"),y=a.querySelector(".action-snooze");return b?.addEventListener("click",()=>{l("dismissed",t.taskType),c(e)}),x?.addEventListener("click",()=>{l("completed",t.taskType),c(e)}),y?.addEventListener("click",()=>{l("snoozed",t.taskType),c(e)}),e}function T(t){switch(t){case"hydration":return"💧";case"eyeCare":return"👁️";case"movement":return"🏃";default:return"🌿"}}function N(t,n){const e=n.includes("T"),a=n.includes("N");let o="";return e?o=t.instruction.mbtiAdaptation.T:a?o=t.instruction.mbtiAdaptation.N:o=t.instruction.mbtiAdaptation.F,`${o} <br/><small>↑ ${t.instruction.scienceBasis}</small>`}function c(t){const e=t.shadowRoot?.querySelector(".notification-card");e&&(e.style.opacity="0",e.style.transform="translateY(-20px)"),setTimeout(()=>{t.remove()},800)}async function l(t,n){try{const e={timestamp:Date.now(),action:t,taskType:n},o=(await chrome.storage.local.get("interactionLog")).interactionLog||[];if(o.push(e),o.length>100&&o.splice(0,o.length-100),await chrome.storage.local.set({interactionLog:o}),t==="completed"){const r=(await chrome.storage.local.get("plantGrowth")).plantGrowth||{level:0,totalCompletions:0,unlockedForms:[]};r.totalCompletions+=1,r.level=Math.floor(r.totalCompletions/10),await chrome.storage.local.set({plantGrowth:r})}}catch(e){console.error("Error logging interaction:",e)}}chrome.runtime.onMessage.addListener((t,n,e)=>{t.type==="SHOW_NOTIFICATION"&&(d(t.data),e({success:!0}))});const g=document.createElement("style");g.textContent=`
   #green-breathe-notification-root {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 2147483647;
     pointer-events: none;
   }
   
   #green-breathe-notification-root .green-breathe-notification {
+    position: absolute;
     pointer-events: auto;
   }
   
