@@ -111,16 +111,37 @@ async function triggerNotification(taskType: TaskType) {
     timestamp: Date.now(),
   };
   
-  // Send message to content script
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tabs[0]?.id) {
+  // ⚠️ 关键修复：当用户在 options 页面点击测试时，active tab 是 chrome-extension:// 页面
+  // content.ts 不会注入到 extension 页面，需要找一个真正的 http/https tab
+  const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const activeTab = activeTabs[0];
+  
+  let targetTabId: number | undefined;
+  
+  if (activeTab?.url?.startsWith('http')) {
+    // Active tab 是普通网页，直接使用
+    targetTabId = activeTab.id;
+  } else {
+    // Active tab 是 extension 页面（options/popup），找一个普通网页
+    const allTabs = await chrome.tabs.query({ currentWindow: true });
+    const httpTab = allTabs.find(tab => tab.url?.startsWith('http'));
+    targetTabId = httpTab?.id;
+    if (targetTabId) {
+      console.log('[GreenBreathe] Active tab is extension page, using tab:', httpTab?.url);
+    } else {
+      console.warn('[GreenBreathe] No http/https tab found to show notification');
+    }
+  }
+
+  if (targetTabId) {
     try {
-      await chrome.tabs.sendMessage(tabs[0].id, {
+      await chrome.tabs.sendMessage(targetTabId, {
         type: 'SHOW_NOTIFICATION',
         data: notificationData,
       });
+      console.log('[GreenBreathe] Notification sent to tab', targetTabId);
     } catch (error) {
-      console.error('Error sending message to content script:', error);
+      console.error('[GreenBreathe] Error sending to content script:', error);
     }
   }
 }
