@@ -1,6 +1,9 @@
 // Content Script - Injects notification into web pages
 import { NotificationData } from '@/types/extension';
 
+// 🔥 Content script initialized
+console.log('[GreenBreathe Content] Script loaded on:', window.location.href);
+
 // Create and inject notification container
 function createNotificationContainer(): HTMLDivElement {
   const container = document.createElement('div');
@@ -411,8 +414,17 @@ async function logInteraction(action: 'completed' | 'snoozed' | 'dismissed', tas
 // Listen for messages from background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SHOW_NOTIFICATION') {
-    showNotification(message.data);
-    sendResponse({ success: true });
+    console.log('[GreenBreathe Content] Received SHOW_NOTIFICATION message', message.data);
+    showNotification(message.data)
+      .then(() => {
+        console.log('[GreenBreathe Content] Notification displayed successfully');
+        sendResponse({ success: true });
+      })
+      .catch((error) => {
+        console.error('[GreenBreathe Content] Error showing notification:', error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true; // 保持消息通道开放，用于异步 sendResponse
   }
 });
 

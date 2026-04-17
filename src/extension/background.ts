@@ -176,19 +176,28 @@ function isQuietHours(quietHours: string[]): boolean {
 
 // Listen for messages from popup/options/content
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('[GreenBreathe Background] Received message:', message.type);
+  
   if (message.type === 'UPDATE_ALARM') {
     setupAlarms().then(() => {
+      console.log('[GreenBreathe Background] Alarms updated');
       sendResponse({ success: true });
     });
     return true;
   }
   
   if (message.type === 'TRIGGER_TEST_NOTIFICATION') {
+    console.log('[GreenBreathe Background] Test notification triggered');
     // For test, randomly pick a task type
     const taskTypes: TaskType[] = ['hydration', 'eyeCare', 'movement'];
     const randomTask = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+    console.log('[GreenBreathe Background] Selected task type:', randomTask);
     triggerNotification(randomTask).then(() => {
+      console.log('[GreenBreathe Background] Test notification sent');
       sendResponse({ success: true });
+    }).catch((error) => {
+      console.error('[GreenBreathe Background] Error sending test notification:', error);
+      sendResponse({ success: false, error: error.message });
     });
     return true;
   }
