@@ -299,6 +299,99 @@ function OptionsPage() {
                   onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })}
                 />
               </div>
+
+              <Separator />
+
+              {/* 背景图片管理 */}
+              <div className="space-y-4">
+                <div>
+                  <Label>背景图片</Label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    自定义提醒卡片的背景图片，建议尺寸 1920x1080 或更高，格式 PNG/JPG
+                  </p>
+                </div>
+
+                {/* 当前背景图片预览 */}
+                {profile.customBackgrounds && profile.customBackgrounds.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {profile.customBackgrounds.map((bg, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={bg}
+                          alt={`背景图 ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border-2 border-border"
+                        />
+                        <button
+                          onClick={() => {
+                            const newBackgrounds = profile.customBackgrounds!.filter((_, i) => i !== index);
+                            setProfile({ ...profile, customBackgrounds: newBackgrounds });
+                          }}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 添加图片按钮 */}
+                <div>
+                  <input
+                    type="file"
+                    id="bg-upload"
+                    accept="image/png,image/jpeg,image/jpg"
+                    multiple
+                    className="hidden"
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+
+                      // 检查总数限制
+                      const currentCount = profile.customBackgrounds?.length || 0;
+                      if (currentCount + files.length > 6) {
+                        alert('最多只能添加6张背景图片');
+                        return;
+                      }
+
+                      // 转换为 base64
+                      const newBackgrounds: string[] = [];
+                      for (const file of files) {
+                        // 检查文件大小 (建议 < 2MB)
+                        if (file.size > 2 * 1024 * 1024) {
+                          alert(`图片 ${file.name} 超过 2MB，请选择更小的图片`);
+                          continue;
+                        }
+
+                        const base64 = await new Promise<string>((resolve) => {
+                          const reader = new FileReader();
+                          reader.onload = (e) => resolve(e.target?.result as string);
+                          reader.readAsDataURL(file);
+                        });
+                        newBackgrounds.push(base64);
+                      }
+
+                      setProfile({
+                        ...profile,
+                        customBackgrounds: [...(profile.customBackgrounds || []), ...newBackgrounds],
+                      });
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('bg-upload')?.click()}
+                    className="w-full"
+                  >
+                    + 添加背景图片 ({(profile.customBackgrounds?.length || 0)}/6)
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💡 如果不添加自定义图片，将使用内置的3张默认背景
+                  </p>
+                </div>
+              </div>
+              </div>
             </CardContent>
           </Card>
 

@@ -172,6 +172,9 @@ async function createNotificationUI(
   const result = await chrome.storage.local.get('userProfile');
   const mbtiType = result.userProfile?.mbtiType || 'INFP';
   const cardSize = result.userProfile?.cardSize || 'medium';
+  const customBackgrounds = result.userProfile?.customBackgrounds || [];
+  
+  console.log('[GreenBreathe Content] User has', customBackgrounds.length, 'custom backgrounds');
   
   // Card size dimensions
   const sizeMap = {
@@ -197,15 +200,23 @@ async function createNotificationUI(
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   
-  // High-quality background images (user provided 2K images) - Using local extension resources
-  const bgImageFiles = [
-    'copper-grass-goldfish.png',  // 铜钱草金鱼
-    'mint-photography.png',        // 薄荷摄影
-    'office-zen-green-cat.png'     // 办公室禅意绿猫
-  ];
-  // Random background image - Use chrome.runtime.getURL to get extension resource URL
-  const randomImageFile = bgImageFiles[Math.floor(Math.random() * bgImageFiles.length)];
-  const bgImage = chrome.runtime.getURL(`images/${randomImageFile}`);
+  // Background image selection: 优先使用用户自定义图片，否则使用内置图片
+  let bgImage: string;
+  if (customBackgrounds.length > 0) {
+    // 从用户自定义图片中随机选择
+    bgImage = customBackgrounds[Math.floor(Math.random() * customBackgrounds.length)];
+    console.log('[GreenBreathe Content] Using custom background');
+  } else {
+    // 使用内置图片
+    const bgImageFiles = [
+      'copper-grass-goldfish.png',  // 铜钱草金鱼
+      'mint-photography.png',        // 薄荷摄影
+      'office-zen-green-cat.png'     // 办公室禅意绿猫
+    ];
+    const randomImageFile = bgImageFiles[Math.floor(Math.random() * bgImageFiles.length)];
+    bgImage = chrome.runtime.getURL(`images/${randomImageFile}`);
+    console.log('[GreenBreathe Content] Using built-in background:', randomImageFile);
+  }
   
   // Create HTML
   shadowRoot.innerHTML = `

@@ -17,6 +17,7 @@ const DEFAULT_PROFILE: UserProfile = {
   quietHours: [],
   notificationPosition: 'top_right',
   minimalMode: false,
+  customBackgrounds: [],     // 默认为空数组，使用内置图片
 };
 
 // Storage API

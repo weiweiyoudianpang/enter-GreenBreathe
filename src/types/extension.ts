@@ -27,6 +27,7 @@ export interface UserProfile {
   soundEnabled?: boolean;
   soundVolume?: number;
   customImage?: string | null;
+  customBackgrounds?: string[];  // 用户自定义背景图片（base64 data URLs）
 }
 
 export interface InteractionLog {

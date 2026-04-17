@@ -160,13 +160,14 @@ function NotificationCard({
   const { width, height } = sizeMap[cardSize];
 
   // High-quality background images (user provided 2K images) - Using local public resources
-  const bgImageFiles = [
+  // In real extension, this would come from user's customBackgrounds in chrome.storage
+  const builtInBgImages = [
     '/copper-grass-goldfish.png',  // 铜钱草金鱼
     '/mint-photography.png',        // 薄荷摄影
     '/office-zen-green-cat.png'     // 办公室禅意绿猫
   ];
-  // Random background image
-  const bgImage = bgImageFiles[Math.floor(Math.random() * bgImageFiles.length)];
+  // Random background image (in real extension, would check customBackgrounds first)
+  const bgImage = builtInBgImages[Math.floor(Math.random() * builtInBgImages.length)];
 
   return (
     <div
