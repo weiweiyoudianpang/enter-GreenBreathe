@@ -382,17 +382,20 @@ export default function Index() {
 
         <div style={{ position: 'relative', zIndex: 1, width: 800, textAlign: 'center' }}>
           {/* 标题 */}
-          <div style={{ marginBottom: 60 }}>
+          <div style={{ marginBottom: 40 }}>
             <h1 style={{ 
               fontSize: 56, fontWeight: 700, margin: '0 0 16px', letterSpacing: 4,
               color: '#ffffff',
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
               fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif"
             }}>
-              青植呼吸
+              青植呼吸 GreenBreathe
             </h1>
-            <p style={{ fontSize: 22, color: 'rgba(255, 255, 255, 0.9)', margin: 0, letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.4)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>
-              基于MBTI的极简健康提醒 · 沉浸式深海森林体验
+            <p style={{ fontSize: 20, color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.4)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>
+              基于 MBTI 性格的极简健康提醒插件 · 沉浸式深海森林美学
+            </p>
+            <p style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.7)', margin: 0, lineHeight: 1.6, fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", maxWidth: 600, marginInline: 'auto' }}>
+              在快节奏的数字生活中，为你提供片刻的宁静。通过定制化的水墨晕开动画与专属的性格文案，温柔地提醒你喝水、休息眼睛、起身活动。
             </p>
           </div>
 
@@ -407,7 +410,7 @@ export default function Index() {
           }}>
             <div style={{ display: 'flex', gap: 40, marginBottom: 40 }}>
               <div style={{ flex: 1 }}>
-                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>选择提醒类型</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>1. 选择提醒类型</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {(Object.keys(TASK_INFO) as TaskType[]).map(t => {
                     const task = TASK_INFO[t];
@@ -440,7 +443,7 @@ export default function Index() {
               <div style={{ width: 1, background: 'rgba(255, 255, 255, 0.2)' }} />
 
               <div style={{ flex: 2 }}>
-                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>选择 MBTI</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>2. 选择你的 MBTI 性格</h2>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {MBTI_LIST.map(m => (
                     <button
@@ -461,7 +464,7 @@ export default function Index() {
                   ))}
                 </div>
                 
-                <h2 style={{ fontSize: 18, color: '#fff', marginTop: 24, marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>卡片尺寸</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginTop: 24, marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>3. 调整卡片尺寸</h2>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {(['small', 'medium', 'large'] as CardSize[]).map(size => (
                     <button
@@ -477,7 +480,7 @@ export default function Index() {
                         textShadow: selectedCardSize === size ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                       }}
                     >
-                      {size === 'small' ? '小' : size === 'medium' ? '中' : '大'}
+                      {size === 'small' ? '小 (800x450)' : size === 'medium' ? '中 (1024x576)' : '大 (1280x720)'}
                     </button>
                   ))}
                 </div>
