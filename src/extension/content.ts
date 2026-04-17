@@ -175,8 +175,7 @@ async function createNotificationUI(
   // Random background image (indoor plants / garden)
   const bgImages = [
     'images/glass-plant-1.png',
-    'images/glass-plant-2.png',
-    'images/ink-wash-mountain.png'
+    'images/glass-plant-2.png'
   ];
   const randomBg = bgImages[Math.floor(Math.random() * bgImages.length)];
   
@@ -189,72 +188,67 @@ async function createNotificationUI(
         box-sizing: border-box;
       }
       
-      /* 🎨 整体卡片：留白美学 + 阴影 */
+      /* 🎨 整体卡片：背景图片覆盖整张卡片 */
       .notification-card {
-        width: 400px;
-        background: #ffffff;
-        border-radius: 16px;
+        width: 420px;
+        min-height: 240px;
+        border-radius: 20px;
         box-shadow: 
-          0 12px 32px rgba(0, 0, 0, 0.08),
-          0 2px 8px rgba(0, 0, 0, 0.04);
+          0 20px 40px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
         font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
         opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        transform: scale(0.95);
+        transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
         pointer-events: none;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end; /* 内容靠下对齐，留出上方风景 */
+        
+        /* 清晰的翠绿风景背景，覆盖整张卡片 */
+        background-image: url('${chrome.runtime.getURL(randomBg)}');
+        background-size: cover;
+        background-position: center;
       }
       
       .notification-card.show {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
       }
       
-      /* 🎨 顶部风景画：清晰、不铺满、有留白 */
-      .image-container {
-        width: 100%;
-        height: 140px;
-        padding: 16px 16px 0 16px; /* 左右上留白 */
-        background: #ffffff;
-      }
-      
-      .scenery-image {
-        width: 100%;
-        height: 100%;
-        border-radius: 12px;
-        background-image: url('${chrome.runtime.getURL(randomBg)}');
-        background-size: cover;
-        background-position: center;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-      }
-      
-      /* 🎨 底部文本区域：干净、清晰的排版 */
+      /* 🎨 文本框区域：毛玻璃质感，只在文字区域 */
       .content-box {
         position: relative;
+        z-index: 1;
         width: 100%;
-        padding: 24px;
-        background: #ffffff;
+        padding: 28px 32px;
+        
+        /* 毛玻璃效果：白色半透明底色，让文字清晰，同时透出背景 */
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px) saturate(120%);
+        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        
         display: flex;
         flex-direction: column;
       }
       
       .encouragement {
-        font-size: 18px;
-        line-height: 1.6;
+        font-size: 20px;
+        line-height: 1.5;
         margin-bottom: 12px;
         font-weight: 600;
-        color: #2c3e2c; /* 深翠绿色文字 */
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
+        color: #1a331a; /* 深翠绿色文字 */
       }
       
       .instruction {
-        color: #5c7a5c; /* 柔和的绿色 */
+        color: #3a5a3a; /* 柔和的绿色 */
         font-size: 14px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         line-height: 1.5;
         font-weight: 400;
       }
@@ -265,29 +259,28 @@ async function createNotificationUI(
       }
       
       .action-btn {
-        padding: 8px 24px;
-        background: #f0f7f0; /* 极淡的绿色背景 */
-        border: 1px solid #d0e5d0;
-        border-radius: 8px;
-        color: #3a5a3a;
-        font-size: 13px;
+        padding: 8px 28px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(150, 200, 150, 0.4);
+        border-radius: 100px;
+        color: #2c4c2c;
+        font-size: 14px;
         font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       }
       
       .action-btn:hover {
-        background: #e2f0e2;
-        border-color: #b8d8b8;
+        background: #ffffff;
+        border-color: #8fbc8f;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       }
     </style>
     
     <div class="notification-card">
-      <div class="image-container">
-        <div class="scenery-image"></div>
-      </div>
       <div class="content-box">
         <div class="encouragement">${data.encouragement}</div>
         <div class="instruction">${data.instruction.instruction} · ${scienceText}</div>
