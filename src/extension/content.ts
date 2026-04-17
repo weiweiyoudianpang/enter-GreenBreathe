@@ -181,23 +181,16 @@ async function createNotificationUI(
         box-sizing: border-box;
       }
       
-      /* 🎨 翠绿森林毛玻璃美学 */
+      /* 🎨 整体卡片：清晰的风景画 */
       .notification-card {
         width: 420px;
         min-height: 240px;
-        background: rgba(15, 40, 20, 0.45); /* 深翠绿半透明底色 */
-        backdrop-filter: blur(24px) saturate(150%);
-        -webkit-backdrop-filter: blur(24px) saturate(150%);
         border-radius: 20px;
-        padding: 40px 32px;
         box-shadow: 
           0 20px 40px rgba(0, 0, 0, 0.2),
-          inset 0 1px 1px rgba(255, 255, 255, 0.15),
-          inset 0 0 20px rgba(100, 200, 100, 0.05);
-        border: 1px solid rgba(150, 220, 150, 0.15);
+          0 0 0 1px rgba(255, 255, 255, 0.1);
         font-family: 'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif;
         opacity: 0;
-        filter: blur(10px);
         transform: scale(0.95);
         transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
@@ -206,64 +199,52 @@ async function createNotificationUI(
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
+        justify-content: flex-end; /* 内容靠下对齐，留出上方风景 */
+        
+        /* 清晰的翠绿风景背景 */
+        background-image: url('${chrome.runtime.getURL('images/glass-plant-1.png')}');
+        background-size: cover;
+        background-position: center;
       }
       
       .notification-card.show {
         opacity: 1;
-        filter: blur(0);
         transform: scale(1);
       }
       
-      /* 🎨 森林风景画背景 (叠加在毛玻璃底层) */
-      .forest-bg {
-        position: absolute;
-        inset: 0;
-        background-image: url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png');
-        background-size: cover;
-        background-position: center;
-        opacity: 0.25;
-        mix-blend-mode: overlay;
-        pointer-events: none;
-        z-index: 0;
-      }
-      
-      .content {
+      /* 🎨 文本框区域：毛玻璃质感 */
+      .content-box {
         position: relative;
         z-index: 1;
+        width: 100%;
+        padding: 32px;
+        
+        /* 毛玻璃效果 */
+        background: rgba(15, 40, 20, 0.35); /* 深翠绿半透明底色 */
+        backdrop-filter: blur(16px) saturate(120%);
+        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        
         display: flex;
         flex-direction: column;
-        width: 100%;
       }
       
-      /* 🌟 文字透出背景效果 (Text Clip) */
       .encouragement {
-        font-size: 26px;
+        font-size: 24px;
         line-height: 1.5;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         font-weight: 600;
         letter-spacing: 2px;
-        
-        /* 核心：文字透明，透出背景图 */
-        background-image: url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        color: transparent;
-        -webkit-background-clip: text;
-        background-clip: text;
-        
-        /* 柔和的发光背景，确保在任何底色上都清晰 */
-        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+        color: #ffffff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
       }
       
       .instruction {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 16px;
-        margin-bottom: 32px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 15px;
+        margin-bottom: 24px;
         letter-spacing: 1.5px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
         font-weight: 300;
       }
@@ -274,13 +255,13 @@ async function createNotificationUI(
       }
       
       .action-btn {
-        padding: 10px 32px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 28px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
         border-radius: 100px;
         color: #fff;
-        font-size: 15px;
+        font-size: 14px;
         font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
         cursor: pointer;
         transition: all 0.4s ease;
@@ -289,16 +270,15 @@ async function createNotificationUI(
       }
       
       .action-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.8);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.3);
       }
     </style>
     
     <div class="notification-card">
-      <div class="forest-bg"></div>
-      <div class="content">
+      <div class="content-box">
         <div class="encouragement">${data.encouragement}</div>
         <div class="instruction">${data.instruction.instruction} · ${scienceText}</div>
         <div class="actions">

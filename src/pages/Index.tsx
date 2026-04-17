@@ -106,58 +106,50 @@ function NotificationCard({
         style={{
           width: 420,
           minHeight: 240,
-          background: 'rgba(15, 40, 20, 0.45)',
-          backdropFilter: 'blur(24px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(150%)',
           borderRadius: 20,
-          padding: '40px 32px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 20px rgba(100, 200, 100, 0.05)',
-          border: '1px solid rgba(150, 220, 150, 0.15)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
           fontFamily: "'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif",
           transform: visible ? 'scale(1)' : 'scale(0.95)',
           opacity: visible ? 1 : 0,
-          filter: visible ? 'blur(0)' : 'blur(10px)',
           transition: 'all 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-        }}
-      >
-        {/* 森林风景画背景 */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
+          justifyContent: 'flex-end',
+          backgroundImage: "url('/images/glass-plant-1.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.25,
-          mixBlendMode: 'overlay',
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {/* 鼓励语 - 文字透出背景效果 */}
+        }}
+      >
+        {/* 文本框区域：毛玻璃质感 */}
+        <div style={{ 
+          position: 'relative', 
+          zIndex: 1, 
+          width: '100%', 
+          padding: 32,
+          background: 'rgba(15, 40, 20, 0.35)',
+          backdropFilter: 'blur(16px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(120%)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}>
+          {/* 鼓励语 */}
           <p style={{ 
-            fontSize: 26, lineHeight: 1.5, marginBottom: 24, 
+            fontSize: 24, lineHeight: 1.5, marginBottom: 16, 
             fontWeight: 600, letterSpacing: 2,
-            backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            color: 'transparent',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))',
+            color: '#ffffff',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
           }}>
             {message}
           </p>
 
           {/* 指令框 */}
           <p style={{ 
-            fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', marginBottom: 32, 
-            letterSpacing: 1.5, textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+            fontSize: 15, color: 'rgba(255, 255, 255, 0.85)', marginBottom: 24, 
+            letterSpacing: 1.5, textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
             fontFamily: "'Source Han Sans CN', 'Noto Sans SC', sans-serif",
             fontWeight: 300,
           }}>
@@ -169,22 +161,22 @@ function NotificationCard({
             <button 
               onClick={onDismiss} 
               style={{
-                padding: '10px 32px', background: 'rgba(255, 255, 255, 0.1)', 
-                backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: 100, fontSize: 15, cursor: 'pointer', color: '#fff',
+                padding: '8px 28px', background: 'rgba(255, 255, 255, 0.15)', 
+                backdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.4)',
+                borderRadius: 100, fontSize: 14, cursor: 'pointer', color: '#fff',
                 fontFamily: "'Source Han Sans CN', 'Noto Sans SC', sans-serif", 
                 letterSpacing: 2, transition: 'all 0.4s ease',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.8)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.3)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
               }}
@@ -237,7 +229,7 @@ export default function Index() {
       <div style={{ 
         width: 1280, 
         height: 720, 
-        background: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png') center/cover",
+        background: "url('/images/glass-plant-1.png') center/cover",
         position: 'relative',
         boxShadow: '0 30px 80px rgba(0,0,0,0.1)',
         borderRadius: 24,
@@ -255,14 +247,8 @@ export default function Index() {
           <div style={{ marginBottom: 60 }}>
             <h1 style={{ 
               fontSize: 48, fontWeight: 600, margin: '0 0 16px', letterSpacing: 4,
-              backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundAttachment: 'fixed',
-              color: 'transparent',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))',
+              color: '#ffffff',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
             }}>
               青植呼吸
             </h1>
