@@ -245,6 +245,26 @@ function OptionsPage() {
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="cardSize">卡片尺寸</Label>
+                <Select
+                  value={profile.cardSize || 'medium'}
+                  onValueChange={(value) => setProfile({ ...profile, cardSize: value as UserProfile['cardSize'] })}
+                >
+                  <SelectTrigger className="glass-input">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">小 (960x570)</SelectItem>
+                    <SelectItem value="medium">中 (1280x760)</SelectItem>
+                    <SelectItem value="large">大 (1600x950)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  根据你的屏幕大小选择合适的卡片尺寸
+                </p>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>提示音</Label>

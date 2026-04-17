@@ -9,6 +9,8 @@ export type TaskType = 'hydration' | 'eyeCare' | 'movement';
 
 export type NotificationPosition = 'top_right' | 'top_left' | 'bottom_right' | 'bottom_left';
 
+export type CardSize = 'small' | 'medium' | 'large';
+
 export interface UserProfile {
   nickname: string;
   mbtiType: MBTIType;
@@ -19,6 +21,7 @@ export interface UserProfile {
   quietHours: string[]; // ["22:00-06:00"]
   notificationPosition: NotificationPosition;
   minimalMode: boolean;
+  cardSize?: CardSize;           // 卡片尺寸（默认 medium）
   // 可选扩展字段
   theme?: string;
   soundEnabled?: boolean;

@@ -155,6 +155,15 @@ async function createNotificationUI(
   // Get user profile
   const result = await chrome.storage.local.get('userProfile');
   const mbtiType = result.userProfile?.mbtiType || 'INFP';
+  const cardSize = result.userProfile?.cardSize || 'medium';
+  
+  // Card size dimensions
+  const sizeMap = {
+    small: { width: 960, height: 570 },
+    medium: { width: 1280, height: 760 },
+    large: { width: 1600, height: 950 }
+  };
+  const { width, height } = sizeMap[cardSize];
   
   // Generate adapted instruction text (without source)
   const isThinker = mbtiType.includes('T');
@@ -172,8 +181,14 @@ async function createNotificationUI(
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   
-  // Fixed background image (no slideshow)
-  const bgImage = 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-1_b9bd090e.png';
+  // High-quality background images (user provided 2K images)
+  const bgImages = [
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a4ec.png',  // 铜钱草金鱼
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/f5db.png',  // 薄荷摄影
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/e7ab.png'   // 办公室禅意绿猫
+  ];
+  // Random background image
+  const bgImage = bgImages[Math.floor(Math.random() * bgImages.length)];
   
   // Create HTML
   shadowRoot.innerHTML = `
@@ -219,10 +234,10 @@ async function createNotificationUI(
         }
       }
       
-      /* 🎨 整体卡片：1280x760 尺寸，背景图片覆盖整张卡片 */
+      /* 🎨 整体卡片：根据用户设置调整尺寸，背景图片覆盖整张卡片 */
       .notification-card {
-        width: 1280px;
-        height: 760px;
+        width: ${width}px;
+        height: ${height}px;
         border-radius: 24px;
         box-shadow: 
           0 30px 60px rgba(0, 0, 0, 0.2),

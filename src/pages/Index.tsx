@@ -80,11 +80,13 @@ function NotificationCard({
   mbti,
   visible,
   onDismiss,
+  cardSize = 'medium',
 }: {
   taskType: TaskType;
   mbti: MbtiType;
   visible: boolean;
   onDismiss: () => void;
+  cardSize?: 'small' | 'medium' | 'large';
 }) {
   const task = TASK_INFO[taskType];
   const message = MBTI_MESSAGES[mbti]?.[taskType] ?? MBTI_MESSAGES.INFP[taskType];
@@ -92,13 +94,22 @@ function NotificationCard({
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
 
-  // 随机选择生成的 2K 背景图
+  // Card size dimensions
+  const sizeMap = {
+    small: { width: 960, height: 570 },
+    medium: { width: 1280, height: 760 },
+    large: { width: 1600, height: 950 }
+  };
+  const { width, height } = sizeMap[cardSize];
+
+  // High-quality background images (user provided 2K images)
   const bgImages = [
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-1_b9bd090e.png',
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-2_3f049316.png'
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a4ec.png',  // 铜钱草金鱼
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/f5db.png',  // 薄荷摄影
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/e7ab.png'   // 办公室禅意绿猫
   ];
-  // 为了演示效果，这里使用第一张，你可以根据需要改成随机
-  const bgImage = bgImages[0];
+  // Random background image
+  const bgImage = bgImages[Math.floor(Math.random() * bgImages.length)];
 
   return (
     <div
@@ -159,8 +170,8 @@ function NotificationCard({
       <div
         className={visible ? 'ink-wash-card' : ''}
         style={{
-          width: 1280,
-          height: 760,
+          width,
+          height,
           borderRadius: 24,
           boxShadow: '0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.15)',
           fontFamily: "'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif",
@@ -254,20 +265,25 @@ function NotificationCard({
 
 const MBTI_LIST: MbtiType[] = ['INTJ', 'INFP', 'ESTJ', 'ENFP', 'ISTP', 'INFJ'];
 
+type CardSize = 'small' | 'medium' | 'large';
+
 export default function Index() {
   const [selectedTask, setSelectedTask] = useState<TaskType>('hydration');
   const [selectedMbti, setSelectedMbti] = useState<MbtiType>('INFP');
+  const [selectedCardSize, setSelectedCardSize] = useState<CardSize>('medium');
   const [notifVisible, setNotifVisible] = useState(false);
   const [currentTask, setCurrentTask] = useState<TaskType>('hydration');
   const [currentMbti, setCurrentMbti] = useState<MbtiType>('INFP');
+  const [currentCardSize, setCurrentCardSize] = useState<CardSize>('medium');
 
   const triggerNotification = useCallback(() => {
     setCurrentTask(selectedTask);
     setCurrentMbti(selectedMbti);
+    setCurrentCardSize(selectedCardSize);
     setNotifVisible(false);
     setTimeout(() => setNotifVisible(true), 80);
     setTimeout(() => setNotifVisible(false), 8000);
-  }, [selectedTask, selectedMbti]);
+  }, [selectedTask, selectedMbti, selectedCardSize]);
 
   return (
     <div style={{
@@ -284,6 +300,7 @@ export default function Index() {
         mbti={currentMbti}
         visible={notifVisible}
         onDismiss={() => setNotifVisible(false)}
+        cardSize={currentCardSize}
       />
 
       <div style={{ 
@@ -378,6 +395,27 @@ export default function Index() {
                       }}
                     >
                       {m}
+                    </button>
+                  ))}
+                </div>
+                
+                <h2 style={{ fontSize: 18, color: '#fff', marginTop: 24, marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>卡片尺寸</h2>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  {(['small', 'medium', 'large'] as CardSize[]).map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedCardSize(size)}
+                      style={{
+                        padding: '10px 24px', borderRadius: 100,
+                        border: selectedCardSize === size ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        background: selectedCardSize === size ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        color: selectedCardSize === size ? '#fff' : 'rgba(255, 255, 255, 0.7)',
+                        fontSize: 16, fontFamily: 'inherit', letterSpacing: 1,
+                        cursor: 'pointer', transition: 'all 0.3s',
+                        textShadow: selectedCardSize === size ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
+                      }}
+                    >
+                      {size === 'small' ? '小' : size === 'medium' ? '中' : '大'}
                     </button>
                   ))}
                 </div>
