@@ -259,10 +259,10 @@ function NotificationCard({
             width: '100%', 
             height: '30%',
             padding: '40px 60px',
-            background: 'rgba(255, 255, 255, 0.75)',
-            backdropFilter: 'blur(20px) saturate(120%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(120%)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(120%)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.5)',
             display: 'flex', 
             flexDirection: 'column',
             justifyContent: 'center'
@@ -272,15 +272,15 @@ function NotificationCard({
           <p style={{ 
             fontSize: 32, lineHeight: 1.5, marginBottom: 16, 
             fontWeight: 600, letterSpacing: 1,
-            color: '#1a331a',
+            color: '#134e6f',
           }}>
             {message}
           </p>
 
           {/* 指令框 */}
           <p style={{ 
-            fontSize: 20, color: '#3a5a3a', marginBottom: 24, 
-            lineHeight: 1.5, fontWeight: 400,
+            fontSize: 20, color: '#38c9a3', marginBottom: 24, 
+            lineHeight: 1.5, fontWeight: 500,
           }}>
             {task.instruction}
           </p>
@@ -290,24 +290,22 @@ function NotificationCard({
             <button 
               onClick={onDismiss} 
               style={{
-                padding: '12px 40px', background: 'rgba(255, 255, 255, 0.9)', 
-                border: '1px solid rgba(150, 200, 150, 0.4)',
-                borderRadius: 100, fontSize: 18, cursor: 'pointer', color: '#2c4c2c',
+                padding: '12px 40px', background: '#38c9a3', 
+                border: 'none',
+                borderRadius: 100, fontSize: 18, cursor: 'pointer', color: '#ffffff',
                 fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", 
-                transition: 'all 0.3s ease', fontWeight: 500,
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                transition: 'all 0.3s ease', fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(56, 201, 163, 0.3)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = '#ffffff';
-                e.currentTarget.style.borderColor = '#8fbc8f';
+                e.currentTarget.style.background = '#2eb391';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(56, 201, 163, 0.4)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
-                e.currentTarget.style.borderColor = 'rgba(150, 200, 150, 0.4)';
+                e.currentTarget.style.background = '#38c9a3';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(56, 201, 163, 0.3)';
               }}
             >
               {randomAction}
@@ -369,9 +367,9 @@ export default function Index() {
       <div style={{ 
         width: 1280, 
         height: 720, 
-        background: "url('/images/glass-plant-1.png') center/cover",
+        background: "url('/images/mint-photography.png') center/cover",
         position: 'relative',
-        boxShadow: '0 30px 80px rgba(0,0,0,0.1)',
+        boxShadow: '0 30px 80px rgba(19,78,111,0.2)',
         borderRadius: 24,
         overflow: 'hidden',
         display: 'flex',
@@ -380,35 +378,36 @@ export default function Index() {
         justifyContent: 'center',
       }}>
         {/* 遮罩层让背景变淡 */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(15, 40, 20, 0.65)', backdropFilter: 'blur(8px)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(19, 78, 111, 0.75)', backdropFilter: 'blur(12px)' }} />
 
         <div style={{ position: 'relative', zIndex: 1, width: 800, textAlign: 'center' }}>
           {/* 标题 */}
           <div style={{ marginBottom: 60 }}>
             <h1 style={{ 
-              fontSize: 48, fontWeight: 600, margin: '0 0 16px', letterSpacing: 4,
+              fontSize: 56, fontWeight: 700, margin: '0 0 16px', letterSpacing: 4,
               color: '#ffffff',
-              textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+              textShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+              fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif"
             }}>
               青植呼吸
             </h1>
-            <p style={{ fontSize: 20, color: 'rgba(255, 255, 255, 0.8)', margin: 0, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-              基于MBTI的极简健康提醒 · 沉浸式森林体验
+            <p style={{ fontSize: 22, color: 'rgba(255, 255, 255, 0.9)', margin: 0, letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.4)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>
+              基于MBTI的极简健康提醒 · 沉浸式深海森林体验
             </p>
           </div>
 
           {/* 演示控制台 */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(19, 78, 111, 0.4)',
             backdropFilter: 'blur(24px) saturate(150%)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: 24,
             padding: 40,
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
           }}>
             <div style={{ display: 'flex', gap: 40, marginBottom: 40 }}>
               <div style={{ flex: 1 }}>
-                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>选择提醒类型</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>选择提醒类型</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {(Object.keys(TASK_INFO) as TaskType[]).map(t => {
                     const task = TASK_INFO[t];
@@ -420,13 +419,13 @@ export default function Index() {
                         style={{
                           padding: '12px 20px',
                           borderRadius: 12,
-                          border: active ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
-                          background: active ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                          border: active ? '1px solid rgba(56, 201, 163, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)',
+                          background: active ? 'rgba(56, 201, 163, 0.2)' : 'transparent',
                           cursor: 'pointer',
                           transition: 'all 0.3s',
                           fontSize: 16,
                           color: active ? '#fff' : 'rgba(255, 255, 255, 0.7)',
-                          fontFamily: 'inherit',
+                          fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif",
                           letterSpacing: 2,
                           textShadow: active ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                         }}
@@ -441,7 +440,7 @@ export default function Index() {
               <div style={{ width: 1, background: 'rgba(255, 255, 255, 0.2)' }} />
 
               <div style={{ flex: 2 }}>
-                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>选择 MBTI</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>选择 MBTI</h2>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {MBTI_LIST.map(m => (
                     <button
@@ -449,10 +448,10 @@ export default function Index() {
                       onClick={() => setSelectedMbti(m)}
                       style={{
                         padding: '10px 24px', borderRadius: 100,
-                        border: selectedMbti === m ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
-                        background: selectedMbti === m ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        border: selectedMbti === m ? '1px solid rgba(56, 201, 163, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        background: selectedMbti === m ? 'rgba(56, 201, 163, 0.2)' : 'transparent',
                         color: selectedMbti === m ? '#fff' : 'rgba(255, 255, 255, 0.7)',
-                        fontSize: 16, fontFamily: 'inherit', letterSpacing: 1,
+                        fontSize: 16, fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", letterSpacing: 1,
                         cursor: 'pointer', transition: 'all 0.3s',
                         textShadow: selectedMbti === m ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                       }}
@@ -462,7 +461,7 @@ export default function Index() {
                   ))}
                 </div>
                 
-                <h2 style={{ fontSize: 18, color: '#fff', marginTop: 24, marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>卡片尺寸</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginTop: 24, marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif" }}>卡片尺寸</h2>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {(['small', 'medium', 'large'] as CardSize[]).map(size => (
                     <button
@@ -470,10 +469,10 @@ export default function Index() {
                       onClick={() => setSelectedCardSize(size)}
                       style={{
                         padding: '10px 24px', borderRadius: 100,
-                        border: selectedCardSize === size ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
-                        background: selectedCardSize === size ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        border: selectedCardSize === size ? '1px solid rgba(56, 201, 163, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        background: selectedCardSize === size ? 'rgba(56, 201, 163, 0.2)' : 'transparent',
                         color: selectedCardSize === size ? '#fff' : 'rgba(255, 255, 255, 0.7)',
-                        fontSize: 16, fontFamily: 'inherit', letterSpacing: 1,
+                        fontSize: 16, fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", letterSpacing: 1,
                         cursor: 'pointer', transition: 'all 0.3s',
                         textShadow: selectedCardSize === size ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                       }}
@@ -489,24 +488,24 @@ export default function Index() {
               onClick={triggerNotification}
               style={{
                 width: '100%', height: 60,
-                background: 'rgba(255, 255, 255, 0.15)',
+                background: 'rgba(56, 201, 163, 0.8)',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: 100, fontSize: 20,
                 color: '#fff', cursor: 'pointer',
-                fontFamily: 'inherit', letterSpacing: 4,
+                fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", letterSpacing: 4,
                 transition: 'all 0.5s',
-                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                boxShadow: '0 8px 24px rgba(56, 201, 163, 0.4)'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                e.currentTarget.style.background = 'rgba(56, 201, 163, 1)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2)';
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(56, 201, 163, 0.6)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.background = 'rgba(56, 201, 163, 0.8)';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(56, 201, 163, 0.4)';
               }}
             >
               触发森林提醒

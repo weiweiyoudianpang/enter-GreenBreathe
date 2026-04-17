@@ -80,61 +80,66 @@ function OptionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="container max-w-4xl mx-auto py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background relative overflow-hidden">
+      {/* 装饰性背景元素 */}
+      <div className="bg-blob-1"></div>
+      <div className="bg-blob-2"></div>
+      <div className="bg-blob-3"></div>
+      
+      <div className="container max-w-4xl mx-auto py-12 px-4 relative z-10">
         {/* 顶部标题 */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-              <span className="text-2xl">🌿</span>
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+              <span className="text-2xl text-white">🌿</span>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               青植呼吸设置
             </h1>
           </div>
-          <p className="text-muted-foreground">用温柔的方式，提醒你关爱自己</p>
+          <p className="text-muted-foreground text-lg">用温柔的方式，提醒你关爱自己</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* 基础设置 */}
-          <Card className="glass-card">
+          <Card className="glass-card border-t-4 border-t-primary/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-xl">👤</span>
+              <CardTitle className="flex items-center gap-2 text-2xl text-primary">
+                <span className="text-2xl">👤</span>
                 基础设置
               </CardTitle>
-              <CardDescription>个性化你的健康提醒体验</CardDescription>
+              <CardDescription className="text-base">个性化你的健康提醒体验</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="nickname">昵称</Label>
+              <div className="space-y-3">
+                <Label htmlFor="nickname" className="text-base font-medium">昵称</Label>
                 <Input
                   id="nickname"
                   value={profile.nickname}
                   onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
                   placeholder="输入你的昵称"
-                  className="glass-input"
+                  className="glass-input h-12 text-lg"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="mbti">MBTI性格类型</Label>
+              <div className="space-y-3">
+                <Label htmlFor="mbti" className="text-base font-medium">MBTI性格类型</Label>
                 <Select
                   value={profile.mbtiType}
                   onValueChange={(value) => setProfile({ ...profile, mbtiType: value as UserProfile['mbtiType'] })}
                 >
-                  <SelectTrigger className="glass-input">
+                  <SelectTrigger className="glass-input h-12 text-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white/90 backdrop-blur-xl border-primary/20">
                     {mbtiTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                      <SelectItem key={type.value} value={type.value} className="text-base hover:bg-primary/10 focus:bg-primary/10">
                         {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   根据你的性格类型定制鼓励语表达方式
                 </p>
               </div>
@@ -142,25 +147,25 @@ function OptionsPage() {
           </Card>
 
           {/* 提醒间隔设置 */}
-          <Card className="glass-card">
+          <Card className="glass-card border-t-4 border-t-secondary/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-xl">⏰</span>
+              <CardTitle className="flex items-center gap-2 text-2xl text-primary">
+                <span className="text-2xl">⏰</span>
                 提醒间隔
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 为每种健康提醒设置不同的间隔时间，0分钟表示不提醒
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-10">
               {/* 喝水提醒 */}
-              <div className="space-y-4">
+              <div className="space-y-5 p-6 rounded-2xl bg-white/40 border border-white/60 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2 text-base">
-                    <span className="text-lg">💧</span>
+                  <Label className="flex items-center gap-3 text-lg font-medium text-primary">
+                    <span className="text-2xl">💧</span>
                     喝水提醒
                   </Label>
-                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                  <span className="text-base font-semibold text-primary px-4 py-1.5 bg-primary/10 rounded-full border border-primary/20">
                     {formatIntervalLabel(profile.hydrationInterval)}
                   </span>
                 </div>
@@ -170,9 +175,9 @@ function OptionsPage() {
                   min={0}
                   max={120}
                   step={5}
-                  className="slider-plant"
+                  className="slider-plant py-4"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   科学建议：每30-60分钟补充150-200ml水分，保持身体水分平衡
                 </p>
               </div>
@@ -180,13 +185,13 @@ function OptionsPage() {
               <Separator className="bg-border/50" />
 
               {/* 眼睛休息提醒 */}
-              <div className="space-y-4">
+              <div className="space-y-5 p-6 rounded-2xl bg-white/40 border border-white/60 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2 text-base">
-                    <span className="text-lg">👁️</span>
+                  <Label className="flex items-center gap-3 text-lg font-medium text-primary">
+                    <span className="text-2xl">👁️</span>
                     眼睛休息提醒
                   </Label>
-                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                  <span className="text-base font-semibold text-primary px-4 py-1.5 bg-primary/10 rounded-full border border-primary/20">
                     {formatIntervalLabel(profile.eyeCareInterval)}
                   </span>
                 </div>
@@ -196,9 +201,9 @@ function OptionsPage() {
                   min={0}
                   max={120}
                   step={5}
-                  className="slider-plant"
+                  className="slider-plant py-4"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   科学建议：每20分钟执行20-20-20法则（看20英尺外20秒），有效缓解视疲劳
                 </p>
               </div>
@@ -206,13 +211,13 @@ function OptionsPage() {
               <Separator className="bg-border/50" />
 
               {/* 身体活动提醒 */}
-              <div className="space-y-4">
+              <div className="space-y-5 p-6 rounded-2xl bg-white/40 border border-white/60 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2 text-base">
-                    <span className="text-lg">🏃</span>
+                  <Label className="flex items-center gap-3 text-lg font-medium text-primary">
+                    <span className="text-2xl">🏃</span>
                     身体活动提醒
                   </Label>
-                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                  <span className="text-base font-semibold text-primary px-4 py-1.5 bg-primary/10 rounded-full border border-primary/20">
                     {formatIntervalLabel(profile.movementInterval)}
                   </span>
                 </div>
@@ -222,9 +227,9 @@ function OptionsPage() {
                   min={0}
                   max={120}
                   step={5}
-                  className="slider-plant"
+                  className="slider-plant py-4"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   科学建议：每60分钟站立活动2-5分钟，促进血液循环，改善久坐伤害
                 </p>
               </div>
@@ -232,104 +237,108 @@ function OptionsPage() {
           </Card>
 
           {/* 外观设置 */}
-          <Card className="glass-card">
+          <Card className="glass-card border-t-4 border-t-accent/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-xl">🎨</span>
+              <CardTitle className="flex items-center gap-2 text-2xl text-primary">
+                <span className="text-2xl">🎨</span>
                 外观设置
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="position">弹窗位置</Label>
+            <CardContent className="space-y-8">
+              <div className="space-y-3">
+                <Label htmlFor="position" className="text-base font-medium">弹窗位置</Label>
                 <Select
                   value={profile.notificationPosition}
                   onValueChange={(value) => setProfile({ ...profile, notificationPosition: value as UserProfile['notificationPosition'] })}
                 >
-                  <SelectTrigger className="glass-input">
+                  <SelectTrigger className="glass-input h-12 text-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="top_right">右上角</SelectItem>
-                    <SelectItem value="top_left">左上角</SelectItem>
-                    <SelectItem value="bottom_right">右下角</SelectItem>
-                    <SelectItem value="bottom_left">左下角</SelectItem>
+                  <SelectContent className="bg-white/90 backdrop-blur-xl border-primary/20">
+                    <SelectItem value="top_right" className="text-base hover:bg-primary/10">右上角</SelectItem>
+                    <SelectItem value="top_left" className="text-base hover:bg-primary/10">左上角</SelectItem>
+                    <SelectItem value="bottom_right" className="text-base hover:bg-primary/10">右下角</SelectItem>
+                    <SelectItem value="bottom_left" className="text-base hover:bg-primary/10">左下角</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cardSize">卡片尺寸</Label>
+              <div className="space-y-3">
+                <Label htmlFor="cardSize" className="text-base font-medium">卡片尺寸</Label>
                 <Select
                   value={profile.cardSize || 'medium'}
                   onValueChange={(value) => setProfile({ ...profile, cardSize: value as UserProfile['cardSize'] })}
                 >
-                  <SelectTrigger className="glass-input">
+                  <SelectTrigger className="glass-input h-12 text-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">小 (960x570)</SelectItem>
-                    <SelectItem value="medium">中 (1280x760)</SelectItem>
-                    <SelectItem value="large">大 (1600x950)</SelectItem>
+                  <SelectContent className="bg-white/90 backdrop-blur-xl border-primary/20">
+                    <SelectItem value="small" className="text-base hover:bg-primary/10">小 (960x570)</SelectItem>
+                    <SelectItem value="medium" className="text-base hover:bg-primary/10">中 (1280x760)</SelectItem>
+                    <SelectItem value="large" className="text-base hover:bg-primary/10">大 (1600x950)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   根据你的屏幕大小选择合适的卡片尺寸
                 </p>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/40 border border-white/60">
                 <div className="space-y-1">
-                  <Label>提示音</Label>
-                  <p className="text-xs text-muted-foreground">播放柔和的提示音</p>
+                  <Label className="text-base font-medium">提示音</Label>
+                  <p className="text-sm text-muted-foreground">播放柔和的提示音</p>
                 </div>
                 <Switch
                   checked={profile.soundEnabled ?? false}
                   onCheckedChange={(checked) => setProfile({ ...profile, soundEnabled: checked })}
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/40 border border-white/60">
                 <div className="space-y-1">
-                  <Label>极简模式</Label>
-                  <p className="text-xs text-muted-foreground">仅显示状态栏图标</p>
+                  <Label className="text-base font-medium">极简模式</Label>
+                  <p className="text-sm text-muted-foreground">仅显示状态栏图标</p>
                 </div>
                 <Switch
                   checked={profile.minimalMode}
                   onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })}
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
 
-              <Separator />
+              <Separator className="bg-border/50" />
 
               {/* 背景图片管理 */}
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <Label>背景图片</Label>
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <Label className="text-base font-medium">自定义背景图片</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
                     自定义提醒卡片的背景图片，建议尺寸 1920x1080 或更高，格式 PNG/JPG
                   </p>
                 </div>
 
                 {/* 当前背景图片预览 */}
                 {profile.customBackgrounds && profile.customBackgrounds.length > 0 && (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-4">
                     {profile.customBackgrounds.map((bg, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="relative group aspect-video rounded-xl overflow-hidden border-2 border-white/60 shadow-sm hover:shadow-md transition-all">
                         <img
                           src={bg}
                           alt={`背景图 ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border-2 border-border"
+                          className="w-full h-full object-cover"
                         />
-                        <button
-                          onClick={() => {
-                            const newBackgrounds = profile.customBackgrounds!.filter((_, i) => i !== index);
-                            setProfile({ ...profile, customBackgrounds: newBackgrounds });
-                          }}
-                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                        >
-                          ×
-                        </button>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            onClick={() => {
+                              const newBackgrounds = profile.customBackgrounds!.filter((_, i) => i !== index);
+                              setProfile({ ...profile, customBackgrounds: newBackgrounds });
+                            }}
+                            className="bg-destructive/90 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-destructive hover:scale-110 transition-all shadow-lg"
+                          >
+                            ×
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -380,14 +389,14 @@ function OptionsPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    size="lg"
                     onClick={() => document.getElementById('bg-upload')?.click()}
-                    className="w-full"
+                    className="w-full glass-button-outline border-dashed border-2 h-16 text-base"
                   >
                     + 添加背景图片 ({(profile.customBackgrounds?.length || 0)}/6)
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    💡 如果不添加自定义图片，将使用内置的3张默认背景
+                  <p className="text-sm text-muted-foreground mt-3 flex items-center gap-2">
+                    <span>💡</span> 如果不添加自定义图片，将使用内置的3张默认背景
                   </p>
                 </div>
               </div>
@@ -395,10 +404,10 @@ function OptionsPage() {
           </Card>
 
           {/* 保存按钮 */}
-          <div className="flex gap-3">
+          <div className="flex gap-4 pt-4">
             <Button
               onClick={handleSave}
-              className="flex-1 glass-button"
+              className="flex-1 glass-button h-14 text-lg rounded-xl"
               size="lg"
               disabled={saveStatus === 'saving'}
             >
@@ -406,12 +415,12 @@ function OptionsPage() {
               {saveStatus === 'saved' && '✓ 已保存'}
               {saveStatus === 'idle' && '保存设置'}
             </Button>
-            <Button onClick={handleTest} variant="outline" size="lg" className="glass-button-outline">
+            <Button onClick={handleTest} variant="outline" size="lg" className="glass-button-outline h-14 text-lg rounded-xl px-8">
               立即测试
             </Button>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-4 pb-8">
             所有数据仅保存在本地，绝不上传云端 🔒
           </p>
         </div>

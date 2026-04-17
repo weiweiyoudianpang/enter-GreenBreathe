@@ -148,7 +148,7 @@ function NotificationWindow() {
             background-size: cover;
             background-position: center;
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(19, 78, 111, 0.3);
             position: relative;
             overflow: hidden;
             animation: inkWashSpread 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -161,29 +161,31 @@ function NotificationWindow() {
             left: 0;
             right: 0;
             height: 30%;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             padding: 40px 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             animation: inkWashText 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
           }
 
           .encouragement {
             font-size: 32px;
             line-height: 1.5;
             margin-bottom: 16px;
-            color: #1a1a1a;
-            font-weight: 500;
+            color: #134e6f;
+            font-weight: 600;
           }
 
           .instruction {
             font-size: 20px;
-            color: #666;
+            color: #38c9a3;
             margin-bottom: 24px;
             line-height: 1.6;
+            font-weight: 500;
           }
 
           .actions {
@@ -196,21 +198,23 @@ function NotificationWindow() {
             padding: 12px 32px;
             border-radius: 12px;
             font-size: 18px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             border: none;
             font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
           }
 
           .action-dismiss {
-            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            background: #38c9a3;
             color: white;
+            box-shadow: 0 4px 12px rgba(56, 201, 163, 0.3);
           }
 
           .action-dismiss:hover {
+            background: #2eb391;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 8px 20px rgba(56, 201, 163, 0.4);
           }
 
           .action-dismiss:active {

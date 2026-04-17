@@ -4,72 +4,72 @@
 
 @layer base {
   :root {
-    /* 🌿 玻璃球盆栽主题 - 米白+柔和绿+毛玻璃 */
-    --background: 40 30% 96%;           /* 温暖米白色 #f7f5f0 */
-    --foreground: 150 20% 20%;          /* 深绿文字 #334d3a */
+    /* 🌿 森林深海主题 - 提取自参考图片 */
+    --background: 190 40% 96%;          /* 极淡的青蓝色背景 */
+    --foreground: 210 60% 15%;          /* 深海蓝文字 */
     
     --card: 0 0% 100%;                  /* 纯白卡片 */
-    --card-foreground: 150 20% 20%;
+    --card-foreground: 210 60% 15%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 150 20% 20%;
+    --popover-foreground: 210 60% 15%;
     
-    /* 主色：鲜活黄绿（植物叶片色） */
-    --primary: 95 55% 60%;              /* 明亮黄绿 #b3d86f */
-    --primary-foreground: 150 30% 15%;  /* 深绿文字 */
+    /* 主色：深海蓝绿 (参考图中的深色叶片) */
+    --primary: 200 70% 25%;             /* 深海蓝绿 #134e6f */
+    --primary-foreground: 0 0% 100%;    /* 白色文字 */
     
-    /* 辅助色：柔和草绿 */
-    --secondary: 120 35% 70%;           /* 柔和绿 #b3d9b3 */
-    --secondary-foreground: 150 20% 25%;
+    /* 辅助色：明亮青绿 (参考图中的亮色叶片) */
+    --secondary: 165 65% 55%;           /* 明亮青绿 #38c9a3 */
+    --secondary-foreground: 210 60% 15%;
     
-    /* 静音色：极淡绿灰 */
-    --muted: 120 15% 94%;               /* 淡绿灰 #eff4ef */
-    --muted-foreground: 150 10% 50%;
+    /* 静音色：淡青灰 */
+    --muted: 190 30% 92%;               /* 淡青灰 */
+    --muted-foreground: 200 30% 45%;
     
-    /* 强调色：玻璃球高光 */
-    --accent: 180 30% 88%;              /* 冰蓝绿 #ddeee8 */
-    --accent-foreground: 150 25% 30%;
+    /* 强调色：荧光青 (参考图中最亮的叶片) */
+    --accent: 160 80% 65%;              /* 荧光青 */
+    --accent-foreground: 210 60% 15%;
     
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 98%;
     
-    /* 边框：淡绿色 */
-    --border: 120 20% 88%;              /* 淡绿边框 #e0ebe0 */
-    --input: 120 20% 90%;
-    --ring: 95 55% 60%;
+    /* 边框：淡青色 */
+    --border: 190 30% 85%;
+    --input: 190 30% 85%;
+    --ring: 165 65% 55%;
     
-    --radius: 1rem;
+    --radius: 1.5rem;
   }
   
   .dark {
-    /* 深色模式：夜间植物园 */
-    --background: 150 15% 10%;          /* 深绿灰 #171f1a */
-    --foreground: 120 20% 88%;          /* 淡绿文字 */
+    /* 深色模式：深海森林 */
+    --background: 210 60% 10%;          /* 极深蓝 */
+    --foreground: 190 40% 96%;          /* 淡青蓝文字 */
     
-    --card: 150 15% 13%;
-    --card-foreground: 120 20% 88%;
+    --card: 210 50% 15%;
+    --card-foreground: 190 40% 96%;
     
-    --popover: 150 15% 13%;
-    --popover-foreground: 120 20% 88%;
+    --popover: 210 50% 15%;
+    --popover-foreground: 190 40% 96%;
     
-    --primary: 95 60% 55%;              /* 夜光绿 */
-    --primary-foreground: 150 10% 95%;
+    --primary: 165 65% 55%;             /* 明亮青绿 */
+    --primary-foreground: 210 60% 10%;
     
-    --secondary: 120 25% 30%;
-    --secondary-foreground: 120 20% 88%;
+    --secondary: 200 70% 25%;           /* 深海蓝绿 */
+    --secondary-foreground: 190 40% 96%;
     
-    --muted: 150 10% 20%;
-    --muted-foreground: 120 15% 65%;
+    --muted: 210 40% 20%;
+    --muted-foreground: 190 20% 70%;
     
-    --accent: 180 30% 22%;
-    --accent-foreground: 180 30% 88%;
+    --accent: 160 80% 65%;
+    --accent-foreground: 210 60% 10%;
     
     --destructive: 0 62% 48%;
     --destructive-foreground: 0 85% 97%;
     
-    --border: 150 15% 22%;
-    --input: 150 15% 22%;
-    --ring: 95 60% 55%;
+    --border: 210 40% 25%;
+    --input: 210 40% 25%;
+    --ring: 165 65% 55%;
   }
 }
 
@@ -80,11 +80,12 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Source Han Sans CN', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Source Han Serif CN', 'Noto Serif SC', Georgia, serif;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    font-weight: 600;
   }
 }
 
@@ -97,17 +98,17 @@ body,
   height: 100%;
 }
 
-/* 🌿 玻璃效果组件 */
+/* 🌿 森林深海风格组件 */
 @layer components {
   .glass-card {
-    @apply bg-white/75 backdrop-blur-xl border border-white/30;
-    @apply shadow-[0_8px_32px_rgba(168,213,94,0.12)];
+    @apply bg-white/80 backdrop-blur-xl border border-white/40;
+    @apply shadow-[0_8px_32px_rgba(19,78,111,0.08)];
     @apply transition-all duration-300;
   }
   
   .glass-card:hover {
-    @apply shadow-[0_12px_48px_rgba(168,213,94,0.18)];
-    @apply -translate-y-0.5;
+    @apply shadow-[0_16px_48px_rgba(19,78,111,0.12)];
+    @apply -translate-y-1;
   }
   
   .glass-input {
@@ -117,28 +118,29 @@ body,
   }
   
   .glass-button {
-    @apply bg-gradient-to-r from-primary to-primary/80;
-    @apply shadow-[0_4px_16px_rgba(168,213,94,0.25)];
-    @apply hover:shadow-[0_8px_24px_rgba(168,213,94,0.35)];
+    @apply bg-primary text-primary-foreground;
+    @apply shadow-[0_4px_16px_rgba(19,78,111,0.2)];
+    @apply hover:shadow-[0_8px_24px_rgba(19,78,111,0.3)];
     @apply hover:-translate-y-0.5;
-    @apply transition-all duration-200;
+    @apply transition-all duration-300 font-medium tracking-wide;
   }
   
   .glass-button-outline {
-    @apply bg-white/60 backdrop-blur-md border-2 border-primary;
-    @apply text-primary hover:bg-primary/10;
-    @apply transition-all duration-200;
+    @apply bg-white/50 backdrop-blur-md border-2 border-primary/20;
+    @apply text-primary hover:bg-primary/5 hover:border-primary/40;
+    @apply shadow-sm hover:shadow-md;
+    @apply transition-all duration-300 font-medium;
   }
   
   /* 植物滑块 */
   .slider-plant [role="slider"] {
-    @apply bg-gradient-to-br from-primary to-primary/70;
-    @apply shadow-[0_2px_8px_rgba(168,213,94,0.3)];
+    @apply bg-primary;
+    @apply shadow-[0_2px_8px_rgba(19,78,111,0.3)];
     @apply border-2 border-white/50;
   }
   
   .slider-plant [role="slider"]:hover {
-    @apply shadow-[0_4px_12px_rgba(168,213,94,0.4)];
+    @apply shadow-[0_4px_12px_rgba(19,78,111,0.4)];
     @apply scale-110;
   }
 }
