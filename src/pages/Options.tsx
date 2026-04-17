@@ -25,13 +25,26 @@ const defaultProfile: UserProfile = {
 };
 
 const mbtiTypes = [
+  // 分析师组 (NT)
   { value: 'INTJ', label: 'INTJ - 建筑师' },
   { value: 'INTP', label: 'INTP - 逻辑学家' },
-  { value: 'INFP', label: 'INFP - 调停者' },
+  { value: 'ENTJ', label: 'ENTJ - 指挥官' },
+  { value: 'ENTP', label: 'ENTP - 辩论家' },
+  // 外交官组 (NF)
   { value: 'INFJ', label: 'INFJ - 提倡者' },
-  { value: 'ESTJ', label: 'ESTJ - 总经理' },
+  { value: 'INFP', label: 'INFP - 调停者' },
+  { value: 'ENFJ', label: 'ENFJ - 主人公' },
   { value: 'ENFP', label: 'ENFP - 竞选者' },
+  // 守护者组 (SJ)
+  { value: 'ISTJ', label: 'ISTJ - 物流师' },
+  { value: 'ISFJ', label: 'ISFJ - 守卫者' },
+  { value: 'ESTJ', label: 'ESTJ - 总经理' },
+  { value: 'ESFJ', label: 'ESFJ - 执政官' },
+  // 探险家组 (SP)
   { value: 'ISTP', label: 'ISTP - 鉴赏家' },
+  { value: 'ISFP', label: 'ISFP - 探险家' },
+  { value: 'ESTP', label: 'ESTP - 企业家' },
+  { value: 'ESFP', label: 'ESFP - 表演者' },
 ];
 
 function OptionsPage() {

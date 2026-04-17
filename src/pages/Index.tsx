@@ -5,35 +5,92 @@ import { Button } from '@/components/ui/button';
 // ─── 数据 ─────────────────────────────────────────────────────────────────────
 
 const MBTI_MESSAGES: Record<string, Record<string, string>> = {
+  // 分析师组 (NT)
   INTJ: {
     hydration: '系统检测到逻辑引擎冷却液不足，建议补充200ml',
     eyeCare: '视觉系统过载，建议执行20秒校准程序',
     movement: '静态时间过长，系统性能开始下降',
+  },
+  INTP: {
+    hydration: '大脑运算需要燃料，补充水分提升处理效率',
+    eyeCare: '长时间专注已影响视觉精度，需要重新校准',
+    movement: '理论证明：运动能提升认知能力27%',
+  },
+  ENTJ: {
+    hydration: '高效领导者懂得战略性补给，现在就喝',
+    eyeCare: '目标达成需要清晰视野，执行眼部维护',
+    movement: '优秀的指挥官也要保持战斗力，起身活动',
+  },
+  ENTP: {
+    hydration: '新想法：水分摄入与创意产出的相关性实验',
+    eyeCare: '换个视角看世界，从休息眼睛开始',
+    movement: '头脑风暴时站起来走走，灵感会加倍',
+  },
+  
+  // 外交官组 (NF)
+  INFJ: {
+    hydration: '照顾好自己，才能更好地关怀他人',
+    eyeCare: '让眼睛看看远方，让心灵也休息一下',
+    movement: '与身体对话，感受此刻的存在',
   },
   INFP: {
     hydration: '你滋润了那么多心灵，也记得滋润自己呀',
     eyeCare: '让眼睛休息，也是对自己的温柔',
     movement: '身体想和你一起跳支小小的舞呢',
   },
-  ESTJ: {
-    hydration: '执行补水任务：200ml，5秒完成',
-    eyeCare: '定时眼保健操，执行20-20-20法则',
-    movement: '久坐警报：立即执行2分钟运动',
+  ENFJ: {
+    hydration: '给予者也需要被滋养，来喝杯水吧',
+    eyeCare: '你关心那么多人，也该关心自己的眼睛了',
+    movement: '带着温暖的心，让身体也感受关怀',
   },
   ENFP: {
     hydration: '喝杯水，让灵感继续冒泡吧',
     eyeCare: '让眼睛看看外面的精彩世界',
     movement: '动起来，让快乐细胞活跃起来',
   },
+  
+  // 守护者组 (SJ)
+  ISTJ: {
+    hydration: '按照健康计划：现在是补水时间',
+    eyeCare: '遵循20-20-20法则，保护视力资产',
+    movement: '规律运动是长期健康的基石',
+  },
+  ISFJ: {
+    hydration: '你照顾了那么多人，现在照顾一下自己',
+    eyeCare: '温柔地对待自己的眼睛，它们很辛苦',
+    movement: '身体也需要你的细心呵护',
+  },
+  ESTJ: {
+    hydration: '执行补水任务：200ml，5秒完成',
+    eyeCare: '定时眼保健操，执行20-20-20法则',
+    movement: '久坐警报：立即执行2分钟运动',
+  },
+  ESFJ: {
+    hydration: '一起喝杯水吧，健康是最好的社交资本',
+    eyeCare: '照顾好眼睛，才能看清你关心的每一个人',
+    movement: '动起来，让自己充满活力去帮助他人',
+  },
+  
+  // 探险家组 (SP)
   ISTP: {
     hydration: '工具需要保养，身体也是',
     eyeCare: '实测有效：20-20-20法则',
     movement: '久坐伤身，这是事实',
   },
-  INFJ: {
-    hydration: '照顾好自己，才能更好地关怀他人',
-    eyeCare: '让眼睛看看远方，让心灵也休息一下',
-    movement: '与身体对话，感受此刻的存在',
+  ISFP: {
+    hydration: '像呵护艺术品一样呵护身体，从喝水开始',
+    eyeCare: '让眼睛休息，美好的事物还在等着你欣赏',
+    movement: '用身体感受当下这一刻的流动',
+  },
+  ESTP: {
+    hydration: '行动派也要补给，快速喝一杯',
+    eyeCare: '眼睛是你的雷达，保持最佳状态',
+    movement: '该活动筋骨了，别让身体生锈',
+  },
+  ESFP: {
+    hydration: '来杯水，让今天的精彩继续',
+    eyeCare: '眼睛累了就休息，生活的美景不会跑',
+    movement: '跟着感觉动起来，享受身体的律动',
   },
 };
 
@@ -263,7 +320,12 @@ function NotificationCard({
 
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
-const MBTI_LIST: MbtiType[] = ['INTJ', 'INFP', 'ESTJ', 'ENFP', 'ISTP', 'INFJ'];
+const MBTI_LIST: MbtiType[] = [
+  'INTJ', 'INTP', 'ENTJ', 'ENTP',  // 分析师组 (NT)
+  'INFJ', 'INFP', 'ENFJ', 'ENFP',  // 外交官组 (NF)
+  'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',  // 守护者组 (SJ)
+  'ISTP', 'ISFP', 'ESTP', 'ESFP',  // 探险家组 (SP)
+];
 
 type CardSize = 'small' | 'medium' | 'large';
 
