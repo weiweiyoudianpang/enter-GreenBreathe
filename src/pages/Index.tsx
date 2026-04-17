@@ -92,8 +92,13 @@ function NotificationCard({
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
 
-  // Fixed background image (no slideshow)
-  const bgImage = '/images/glass-plant-1.png';
+  // 随机选择生成的 2K 背景图
+  const bgImages = [
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-1_b9bd090e.png',
+    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-2_3f049316.png'
+  ];
+  // 为了演示效果，这里使用第一张，你可以根据需要改成随机
+  const bgImage = bgImages[0];
 
   return (
     <div
@@ -105,16 +110,63 @@ function NotificationCard({
         pointerEvents: 'none',
       }}
     >
+      <style>
+        {`
+          @keyframes inkWashSpread {
+            0% {
+              opacity: 0;
+              filter: blur(30px) contrast(1.2) brightness(1.2);
+              transform: scale(1.05);
+            }
+            40% {
+              opacity: 0.6;
+              filter: blur(15px) contrast(1.1) brightness(1.1);
+            }
+            100% {
+              opacity: 1;
+              filter: blur(0px) contrast(1) brightness(1);
+              transform: scale(1);
+            }
+          }
+
+          @keyframes inkWashText {
+            0% {
+              opacity: 0;
+              filter: blur(12px);
+              transform: translateY(10px);
+            }
+            40% {
+              opacity: 0;
+              filter: blur(12px);
+              transform: translateY(10px);
+            }
+            100% {
+              opacity: 1;
+              filter: blur(0px);
+              transform: translateY(0);
+            }
+          }
+
+          .ink-wash-card {
+            animation: inkWashSpread 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+
+          .ink-wash-content {
+            animation: inkWashText 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+        `}
+      </style>
       <div
+        className={visible ? 'ink-wash-card' : ''}
         style={{
           width: 1280,
           height: 760,
           borderRadius: 24,
           boxShadow: '0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.15)',
           fontFamily: "'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif",
-          transform: visible ? 'scale(1)' : 'scale(0.98)',
           opacity: visible ? 1 : 0,
-          transition: 'all 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
+          filter: visible ? 'blur(0px)' : 'blur(10px)',
+          transform: visible ? 'scale(1)' : 'scale(0.95)',
           pointerEvents: 'none',
           position: 'relative',
           overflow: 'hidden',
@@ -124,23 +176,29 @@ function NotificationCard({
           backgroundImage: `url('${bgImage}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          // 隐藏时的状态，避免动画结束前闪烁
+          visibility: visible ? 'visible' : 'hidden',
+          transition: 'visibility 2.5s, opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), filter 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         {/* 文本框区域：毛玻璃质感，只占整个窗口的 30% */}
-        <div style={{ 
-          position: 'relative', 
-          zIndex: 1, 
-          width: '100%', 
-          height: '30%',
-          padding: '40px 60px',
-          background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(20px) saturate(120%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(120%)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center'
-        }}>
+        <div 
+          className={visible ? 'ink-wash-content' : ''}
+          style={{ 
+            position: 'relative', 
+            zIndex: 1, 
+            width: '100%', 
+            height: '30%',
+            padding: '40px 60px',
+            background: 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(20px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(120%)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}
+        >
           {/* 鼓励语 */}
           <p style={{ 
             fontSize: 32, lineHeight: 1.5, marginBottom: 16, 

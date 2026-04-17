@@ -1,9 +1,44 @@
-function b(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function x(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const n=document.querySelectorAll("video");for(const o of n){const r=o.getBoundingClientRect(),c=r.width>200&&r.height>150;if(!o.paused&&o.currentTime>0&&c)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const o of t)if(!o.paused&&o.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let u=0,f=0;document.addEventListener("mousemove",()=>{u=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{f=Date.now()},{passive:!0});function y(){const e=Date.now();return e-u<5e3||e-f<5e3}async function l(e,n=0){if(x()&&n<3){console.log(`[GreenBreathe] Retry attempt ${n+1}/3 after 30s`),setTimeout(()=>l(e,n+1),3e4);return}if(y()&&n===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>l(e,n),1e4);return}const a=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",i=await v(e,a);let o=document.getElementById("green-breathe-notification-root");o||(o=b()),o.innerHTML="",o.appendChild(i),setTimeout(()=>{const r=i.shadowRoot?.querySelector(".notification-card");r&&r.classList.add("show")},100),setTimeout(()=>{g(i)},8e3)}async function v(e,n){const t=document.createElement("div");t.className=`green-breathe-notification ${n}`;const a=t.attachShadow({mode:"open"}),o=(await chrome.storage.local.get("userProfile")).userProfile?.mbtiType||"INFP",r=o.includes("T"),c=o.includes("N");let s="";r?s=e.instruction.mbtiAdaptation.T:c?s=e.instruction.mbtiAdaptation.N:s=e.instruction.mbtiAdaptation.F;const d=["了解啦","谢谢关心","OK","收到","这就去"],m=d[Math.floor(Math.random()*d.length)],h="images/glass-plant-1.png";return a.innerHTML=`
+function b(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function x(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const i=document.querySelectorAll("video");for(const o of i){const r=o.getBoundingClientRect(),c=r.width>200&&r.height>150;if(!o.paused&&o.currentTime>0&&c)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const o of t)if(!o.paused&&o.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let u=0,f=0;document.addEventListener("mousemove",()=>{u=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{f=Date.now()},{passive:!0});function y(){const e=Date.now();return e-u<5e3||e-f<5e3}async function l(e,i=0){if(x()&&i<3){console.log(`[GreenBreathe] Retry attempt ${i+1}/3 after 30s`),setTimeout(()=>l(e,i+1),3e4);return}if(y()&&i===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>l(e,i),1e4);return}const a=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",n=await v(e,a);let o=document.getElementById("green-breathe-notification-root");o||(o=b()),o.innerHTML="",o.appendChild(n),setTimeout(()=>{const r=n.shadowRoot?.querySelector(".notification-card");r&&r.classList.add("show")},100),setTimeout(()=>{p(n)},8e3)}async function v(e,i){const t=document.createElement("div");t.className=`green-breathe-notification ${i}`;const a=t.attachShadow({mode:"open"}),o=(await chrome.storage.local.get("userProfile")).userProfile?.mbtiType||"INFP",r=o.includes("T"),c=o.includes("N");let s="";r?s=e.instruction.mbtiAdaptation.T:c?s=e.instruction.mbtiAdaptation.N:s=e.instruction.mbtiAdaptation.F;const d=["了解啦","谢谢关心","OK","收到","这就去"],m=d[Math.floor(Math.random()*d.length)],h="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-1_b9bd090e.png";return a.innerHTML=`
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+      
+      @keyframes inkWashSpread {
+        0% {
+          opacity: 0;
+          filter: blur(30px) contrast(1.2) brightness(1.2);
+          transform: scale(1.05);
+        }
+        40% {
+          opacity: 0.6;
+          filter: blur(15px) contrast(1.1) brightness(1.1);
+        }
+        100% {
+          opacity: 1;
+          filter: blur(0px) contrast(1) brightness(1);
+          transform: scale(1);
+        }
+      }
+
+      @keyframes inkWashText {
+        0% {
+          opacity: 0;
+          filter: blur(12px);
+          transform: translateY(10px);
+        }
+        40% {
+          opacity: 0;
+          filter: blur(12px);
+          transform: translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          filter: blur(0px);
+          transform: translateY(0);
+        }
       }
       
       /* 🎨 整体卡片：1280x760 尺寸，背景图片覆盖整张卡片 */
@@ -16,8 +51,6 @@ function b(){const e=document.createElement("div");return e.id="green-breathe-no
           0 0 0 1px rgba(255, 255, 255, 0.15);
         font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
         opacity: 0;
-        transform: scale(0.98);
-        transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
@@ -27,14 +60,13 @@ function b(){const e=document.createElement("div");return e.id="green-breathe-no
         justify-content: flex-end; /* 内容靠下对齐 */
         
         /* 清晰的翠绿风景背景，覆盖整张卡片 */
-        background-image: url('${chrome.runtime.getURL(h)}');
+        background-image: url('${h}');
         background-size: cover;
         background-position: center;
       }
       
       .notification-card.show {
-        opacity: 1;
-        transform: scale(1);
+        animation: inkWashSpread 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
       
       /* 🎨 文本框区域：毛玻璃质感，只占整个窗口的 30% */
@@ -54,6 +86,10 @@ function b(){const e=document.createElement("div");return e.id="green-breathe-no
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+      
+      .notification-card.show .content-box {
+        animation: inkWashText 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
       
       .encouragement {
@@ -110,7 +146,7 @@ function b(){const e=document.createElement("div");return e.id="green-breathe-no
         </div>
       </div>
     </div>
-  `,a.querySelector(".action-dismiss")?.addEventListener("click",()=>{w("dismissed",e.taskType),g(t)}),t}function g(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.opacity="0",t.style.filter="blur(10px)",t.style.transform="scale(0.95)"),setTimeout(()=>{e.remove()},2e3)}async function w(e,n){try{const t={timestamp:Date.now(),action:e,taskType:n},i=(await chrome.storage.local.get("interactionLog")).interactionLog||[];i.push(t),i.length>100&&i.splice(0,i.length-100),await chrome.storage.local.set({interactionLog:i})}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,n,t)=>{e.type==="SHOW_NOTIFICATION"&&(l(e.data),t({success:!0}))});const p=document.createElement("style");p.textContent=`
+  `,a.querySelector(".action-dismiss")?.addEventListener("click",()=>{w("dismissed",e.taskType),p(t)}),t}function p(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.animation="none",t.style.transition="all 1.5s cubic-bezier(0.22, 1, 0.36, 1)",t.style.opacity="0",t.style.filter="blur(10px)",t.style.transform="scale(0.95)"),setTimeout(()=>{e.remove()},2e3)}async function w(e,i){try{const t={timestamp:Date.now(),action:e,taskType:i},n=(await chrome.storage.local.get("interactionLog")).interactionLog||[];n.push(t),n.length>100&&n.splice(0,n.length-100),await chrome.storage.local.set({interactionLog:n})}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,i,t)=>{e.type==="SHOW_NOTIFICATION"&&(l(e.data),t({success:!0}))});const g=document.createElement("style");g.textContent=`
   #green-breathe-notification-root {
     position: fixed;
     top: 0;
@@ -145,4 +181,4 @@ function b(){const e=document.createElement("div");return e.id="green-breathe-no
     bottom: 32px;
     left: 32px;
   }
-`;document.head.appendChild(p);console.log("GreenBreathe Content Script Loaded");
+`;document.head.appendChild(g);console.log("GreenBreathe Content Script Loaded");

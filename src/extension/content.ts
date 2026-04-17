@@ -173,7 +173,7 @@ async function createNotificationUI(
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   
   // Fixed background image (no slideshow)
-  const bgImage = 'images/glass-plant-1.png';
+  const bgImage = 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/green-plant-bg-1_b9bd090e.png';
   
   // Create HTML
   shadowRoot.innerHTML = `
@@ -182,6 +182,41 @@ async function createNotificationUI(
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+      
+      @keyframes inkWashSpread {
+        0% {
+          opacity: 0;
+          filter: blur(30px) contrast(1.2) brightness(1.2);
+          transform: scale(1.05);
+        }
+        40% {
+          opacity: 0.6;
+          filter: blur(15px) contrast(1.1) brightness(1.1);
+        }
+        100% {
+          opacity: 1;
+          filter: blur(0px) contrast(1) brightness(1);
+          transform: scale(1);
+        }
+      }
+
+      @keyframes inkWashText {
+        0% {
+          opacity: 0;
+          filter: blur(12px);
+          transform: translateY(10px);
+        }
+        40% {
+          opacity: 0;
+          filter: blur(12px);
+          transform: translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          filter: blur(0px);
+          transform: translateY(0);
+        }
       }
       
       /* 🎨 整体卡片：1280x760 尺寸，背景图片覆盖整张卡片 */
@@ -194,8 +229,6 @@ async function createNotificationUI(
           0 0 0 1px rgba(255, 255, 255, 0.15);
         font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
         opacity: 0;
-        transform: scale(0.98);
-        transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
@@ -205,14 +238,13 @@ async function createNotificationUI(
         justify-content: flex-end; /* 内容靠下对齐 */
         
         /* 清晰的翠绿风景背景，覆盖整张卡片 */
-        background-image: url('${chrome.runtime.getURL(bgImage)}');
+        background-image: url('${bgImage}');
         background-size: cover;
         background-position: center;
       }
       
       .notification-card.show {
-        opacity: 1;
-        transform: scale(1);
+        animation: inkWashSpread 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
       
       /* 🎨 文本框区域：毛玻璃质感，只占整个窗口的 30% */
@@ -232,6 +264,10 @@ async function createNotificationUI(
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+      
+      .notification-card.show .content-box {
+        animation: inkWashText 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
       
       .encouragement {
@@ -307,6 +343,8 @@ function dismissNotification(element: HTMLElement) {
   const card = shadowRoot?.querySelector('.notification-card') as HTMLElement;
   
   if (card) {
+    card.style.animation = 'none'; // 移除入场动画，以便应用退场过渡
+    card.style.transition = 'all 1.5s cubic-bezier(0.22, 1, 0.36, 1)';
     card.style.opacity = '0';
     card.style.filter = 'blur(10px)';
     card.style.transform = 'scale(0.95)';
