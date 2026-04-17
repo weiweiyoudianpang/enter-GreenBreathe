@@ -65,10 +65,12 @@ function PopupPage() {
       
       <div className="p-6 space-y-5 relative z-10">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg mb-3">
-            <span className="text-3xl text-white">🌿</span>
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">青植呼吸</h2>
+          <img
+            src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/5d5a.png"
+            alt="青植呼吸"
+            className="w-32 mx-auto mb-2 drop-shadow"
+            crossOrigin="anonymous"
+          />
           <p className="text-base text-muted-foreground mt-1">你好，{profile.nickname}</p>
         </div>
 

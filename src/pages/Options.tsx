@@ -80,23 +80,27 @@ function OptionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background relative overflow-hidden">
-      {/* 装饰性背景元素 */}
-      <div className="bg-blob-1"></div>
-      <div className="bg-blob-2"></div>
-      <div className="bg-blob-3"></div>
+    <div className="min-h-screen relative overflow-hidden"
+      style={{
+        backgroundImage: `url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/36df.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#f0f7f2',
+      }}
+    >
+      {/* 轻微白色遮罩，保证内容可读性 */}
+      <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px]"></div>
       
       <div className="container max-w-4xl mx-auto py-12 px-4 relative z-10">
-        {/* 顶部标题 */}
+        {/* 顶部 Logo + 标题 */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-              <span className="text-2xl text-white">🌿</span>
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              青植呼吸设置
-            </h1>
-          </div>
+          <img
+            src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/5d5a.png"
+            alt="青植呼吸 GreenBreathe"
+            className="w-64 mx-auto mb-4 drop-shadow-lg"
+            crossOrigin="anonymous"
+          />
           <p className="text-muted-foreground text-lg">用温柔的方式，提醒你关爱自己</p>
         </div>
 
