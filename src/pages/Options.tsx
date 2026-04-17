@@ -82,7 +82,7 @@ function OptionsPage() {
   return (
     <div className="min-h-screen relative overflow-hidden"
       style={{
-        backgroundImage: `url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/36df.png')`,
+        backgroundImage: `url('/images/bg-options.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
         backgroundAttachment: 'fixed',
@@ -96,10 +96,9 @@ function OptionsPage() {
         {/* 顶部 Logo + 标题 */}
         <div className="text-center mb-12">
           <img
-            src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/5d5a.png"
+            src="/images/logo-greenbreathe.png"
             alt="青植呼吸 GreenBreathe"
             className="w-64 mx-auto mb-4 drop-shadow-lg"
-            crossOrigin="anonymous"
           />
           <p className="text-muted-foreground text-lg">用温柔的方式，提醒你关爱自己</p>
         </div>

@@ -66,10 +66,9 @@ function PopupPage() {
       <div className="p-6 space-y-5 relative z-10">
         <div className="text-center mb-6">
           <img
-            src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/5d5a.png"
+            src="/images/logo-greenbreathe.png"
             alt="青植呼吸"
             className="w-32 mx-auto mb-2 drop-shadow"
-            crossOrigin="anonymous"
           />
           <p className="text-base text-muted-foreground mt-1">你好，{profile.nickname}</p>
         </div>
