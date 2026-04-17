@@ -172,12 +172,8 @@ async function createNotificationUI(
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   
-  // Random background image (indoor plants / garden)
-  const bgImages = [
-    'images/glass-plant-1.png',
-    'images/glass-plant-2.png'
-  ];
-  const randomBg = bgImages[Math.floor(Math.random() * bgImages.length)];
+  // Fixed background image (no slideshow)
+  const bgImage = 'images/glass-plant-1.png';
   
   // Create HTML
   shadowRoot.innerHTML = `
@@ -188,17 +184,17 @@ async function createNotificationUI(
         box-sizing: border-box;
       }
       
-      /* 🎨 整体卡片：背景图片覆盖整张卡片 */
+      /* 🎨 整体卡片：1280x760 尺寸，背景图片覆盖整张卡片 */
       .notification-card {
-        width: 420px;
-        min-height: 240px;
-        border-radius: 20px;
+        width: 1280px;
+        height: 760px;
+        border-radius: 24px;
         box-shadow: 
-          0 20px 40px rgba(0, 0, 0, 0.15),
-          0 0 0 1px rgba(255, 255, 255, 0.2);
+          0 30px 60px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(255, 255, 255, 0.15);
         font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
         opacity: 0;
-        transform: scale(0.95);
+        transform: scale(0.98);
         transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
@@ -206,10 +202,10 @@ async function createNotificationUI(
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* 内容靠下对齐，留出上方风景 */
+        justify-content: flex-end; /* 内容靠下对齐 */
         
         /* 清晰的翠绿风景背景，覆盖整张卡片 */
-        background-image: url('${chrome.runtime.getURL(randomBg)}');
+        background-image: url('${chrome.runtime.getURL(bgImage)}');
         background-size: cover;
         background-position: center;
       }
@@ -219,27 +215,29 @@ async function createNotificationUI(
         transform: scale(1);
       }
       
-      /* 🎨 文本框区域：毛玻璃质感，只在文字区域 */
+      /* 🎨 文本框区域：毛玻璃质感，只占整个窗口的 30% */
       .content-box {
         position: relative;
         z-index: 1;
         width: 100%;
-        padding: 28px 32px;
+        height: 30%; /* 严格控制占比 30% */
+        padding: 40px 60px;
         
         /* 毛玻璃效果：白色半透明底色，让文字清晰，同时透出背景 */
         background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(16px) saturate(120%);
-        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        backdrop-filter: blur(20px) saturate(120%);
+        -webkit-backdrop-filter: blur(20px) saturate(120%);
         border-top: 1px solid rgba(255, 255, 255, 0.4);
         
         display: flex;
         flex-direction: column;
+        justify-content: center;
       }
       
       .encouragement {
-        font-size: 20px;
+        font-size: 32px;
         line-height: 1.5;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         font-weight: 600;
         letter-spacing: 1px;
         color: #1a331a; /* 深翠绿色文字 */
@@ -247,8 +245,8 @@ async function createNotificationUI(
       
       .instruction {
         color: #3a5a3a; /* 柔和的绿色 */
-        font-size: 14px;
-        margin-bottom: 20px;
+        font-size: 20px;
+        margin-bottom: 24px;
         line-height: 1.5;
         font-weight: 400;
       }
@@ -256,27 +254,28 @@ async function createNotificationUI(
       .actions {
         pointer-events: auto;
         align-self: flex-end;
+        margin-top: auto;
       }
       
       .action-btn {
-        padding: 8px 28px;
+        padding: 12px 40px;
         background: rgba(255, 255, 255, 0.9);
         border: 1px solid rgba(150, 200, 150, 0.4);
         border-radius: 100px;
         color: #2c4c2c;
-        font-size: 14px;
+        font-size: 18px;
         font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 500;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       }
       
       .action-btn:hover {
         background: #ffffff;
         border-color: #8fbc8f;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
       }
     </style>
     

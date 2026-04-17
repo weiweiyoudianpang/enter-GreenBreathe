@@ -92,12 +92,8 @@ function NotificationCard({
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
 
-  // Random background image (indoor plants / garden)
-  const bgImages = [
-    '/images/glass-plant-1.png',
-    '/images/glass-plant-2.png'
-  ];
-  const randomBg = bgImages[Math.floor(Math.random() * bgImages.length)];
+  // Fixed background image (no slideshow)
+  const bgImage = '/images/glass-plant-1.png';
 
   return (
     <div
@@ -111,12 +107,12 @@ function NotificationCard({
     >
       <div
         style={{
-          width: 420,
-          minHeight: 240,
-          borderRadius: 20,
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2)',
+          width: 1280,
+          height: 760,
+          borderRadius: 24,
+          boxShadow: '0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.15)',
           fontFamily: "'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif",
-          transform: visible ? 'scale(1)' : 'scale(0.95)',
+          transform: visible ? 'scale(1)' : 'scale(0.98)',
           opacity: visible ? 1 : 0,
           transition: 'all 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
@@ -125,27 +121,29 @@ function NotificationCard({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          backgroundImage: `url('${randomBg}')`,
+          backgroundImage: `url('${bgImage}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* 文本框区域：毛玻璃质感，只在文字区域 */}
+        {/* 文本框区域：毛玻璃质感，只占整个窗口的 30% */}
         <div style={{ 
           position: 'relative', 
           zIndex: 1, 
           width: '100%', 
-          padding: '28px 32px',
+          height: '30%',
+          padding: '40px 60px',
           background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(16px) saturate(120%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(120%)',
+          backdropFilter: 'blur(20px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(120%)',
           borderTop: '1px solid rgba(255, 255, 255, 0.4)',
           display: 'flex', 
-          flexDirection: 'column' 
+          flexDirection: 'column',
+          justifyContent: 'center'
         }}>
           {/* 鼓励语 */}
           <p style={{ 
-            fontSize: 20, lineHeight: 1.5, marginBottom: 12, 
+            fontSize: 32, lineHeight: 1.5, marginBottom: 16, 
             fontWeight: 600, letterSpacing: 1,
             color: '#1a331a',
           }}>
@@ -154,35 +152,35 @@ function NotificationCard({
 
           {/* 指令框 */}
           <p style={{ 
-            fontSize: 14, color: '#3a5a3a', marginBottom: 20, 
+            fontSize: 20, color: '#3a5a3a', marginBottom: 24, 
             lineHeight: 1.5, fontWeight: 400,
           }}>
             {task.instruction}
           </p>
 
           {/* 操作按钮 */}
-          <div style={{ pointerEvents: 'auto', alignSelf: 'flex-end' }}>
+          <div style={{ pointerEvents: 'auto', alignSelf: 'flex-end', marginTop: 'auto' }}>
             <button 
               onClick={onDismiss} 
               style={{
-                padding: '8px 28px', background: 'rgba(255, 255, 255, 0.9)', 
+                padding: '12px 40px', background: 'rgba(255, 255, 255, 0.9)', 
                 border: '1px solid rgba(150, 200, 150, 0.4)',
-                borderRadius: 100, fontSize: 14, cursor: 'pointer', color: '#2c4c2c',
+                borderRadius: 100, fontSize: 18, cursor: 'pointer', color: '#2c4c2c',
                 fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", 
                 transition: 'all 0.3s ease', fontWeight: 500,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.background = '#ffffff';
                 e.currentTarget.style.borderColor = '#8fbc8f';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.08)';
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
                 e.currentTarget.style.borderColor = 'rgba(150, 200, 150, 0.4)';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
               }}
             >
               {randomAction}
