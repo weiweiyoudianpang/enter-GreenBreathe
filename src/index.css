@@ -4,86 +4,72 @@
 
 @layer base {
   :root {
-    /* 水墨青绿主题 - GreenBreathe Design System */
-    --background: 150 20% 98%;
-    --foreground: 150 30% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 150 30% 15%;
-
+    /* 🌿 玻璃球盆栽主题 - 米白+柔和绿+毛玻璃 */
+    --background: 40 30% 96%;           /* 温暖米白色 #f7f5f0 */
+    --foreground: 150 20% 20%;          /* 深绿文字 #334d3a */
+    
+    --card: 0 0% 100%;                  /* 纯白卡片 */
+    --card-foreground: 150 20% 20%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 150 30% 15%;
-
-    /* 主色：青植绿 #64b464 */
-    --primary: 120 40% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 120 40% 70%;
-    --primary-dark: 120 40% 40%;
-
-    /* 辅色：清新绿 #8bc34a */
-    --secondary: 88 50% 53%;
-    --secondary-foreground: 150 30% 15%;
-
-    --muted: 150 20% 95%;
-    --muted-foreground: 150 15% 45%;
-
-    --accent: 150 30% 90%;
-    --accent-foreground: 150 30% 20%;
-
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 150 20% 88%;
-    --input: 150 20% 88%;
-    --ring: 120 40% 55%;
-
-    --radius: 0.5rem;
-
-    /* 水墨特效 */
-    --ink-wash-opacity: 0.08;
-    --glass-blur: 10px;
+    --popover-foreground: 150 20% 20%;
     
-    /* 渐变 */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    /* 主色：鲜活黄绿（植物叶片色） */
+    --primary: 95 55% 60%;              /* 明亮黄绿 #b3d86f */
+    --primary-foreground: 150 30% 15%;  /* 深绿文字 */
     
-    /* 阴影 */
-    --shadow-soft: 0 2px 8px rgba(100, 180, 100, 0.1);
-    --shadow-medium: 0 4px 16px rgba(100, 180, 100, 0.15);
-    --shadow-elegant: 0 8px 32px rgba(100, 180, 100, 0.2);
+    /* 辅助色：柔和草绿 */
+    --secondary: 120 35% 70%;           /* 柔和绿 #b3d9b3 */
+    --secondary-foreground: 150 20% 25%;
     
-    /* 过渡 */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 静音色：极淡绿灰 */
+    --muted: 120 15% 94%;               /* 淡绿灰 #eff4ef */
+    --muted-foreground: 150 10% 50%;
+    
+    /* 强调色：玻璃球高光 */
+    --accent: 180 30% 88%;              /* 冰蓝绿 #ddeee8 */
+    --accent-foreground: 150 25% 30%;
+    
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* 边框：淡绿色 */
+    --border: 120 20% 88%;              /* 淡绿边框 #e0ebe0 */
+    --input: 120 20% 90%;
+    --ring: 95 55% 60%;
+    
+    --radius: 1rem;
   }
-
+  
   .dark {
-    --background: 150 25% 8%;
-    --foreground: 150 15% 90%;
-
-    --card: 150 25% 10%;
-    --card-foreground: 150 15% 90%;
-
-    --popover: 150 25% 10%;
-    --popover-foreground: 150 15% 90%;
-
-    --primary: 120 40% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 88 45% 40%;
-    --secondary-foreground: 150 15% 90%;
-
-    --muted: 150 20% 15%;
-    --muted-foreground: 150 15% 60%;
-
-    --accent: 150 25% 20%;
-    --accent-foreground: 150 15% 90%;
-
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 150 20% 20%;
-    --input: 150 20% 20%;
-    --ring: 120 40% 50%;
+    /* 深色模式：夜间植物园 */
+    --background: 150 15% 10%;          /* 深绿灰 #171f1a */
+    --foreground: 120 20% 88%;          /* 淡绿文字 */
+    
+    --card: 150 15% 13%;
+    --card-foreground: 120 20% 88%;
+    
+    --popover: 150 15% 13%;
+    --popover-foreground: 120 20% 88%;
+    
+    --primary: 95 60% 55%;              /* 夜光绿 */
+    --primary-foreground: 150 10% 95%;
+    
+    --secondary: 120 25% 30%;
+    --secondary-foreground: 120 20% 88%;
+    
+    --muted: 150 10% 20%;
+    --muted-foreground: 120 15% 65%;
+    
+    --accent: 180 30% 22%;
+    --accent-foreground: 180 30% 88%;
+    
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 85% 97%;
+    
+    --border: 150 15% 22%;
+    --input: 150 15% 22%;
+    --ring: 95 60% 55%;
   }
 }
 
@@ -98,7 +84,7 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Source Han Serif CN', 'Noto Serif SC', serif;
+    font-family: 'Source Han Serif CN', 'Noto Serif SC', Georgia, serif;
   }
 }
 
@@ -109,6 +95,52 @@ body,
 #popup-root {
   width: 100%;
   height: 100%;
+}
+
+/* 🌿 玻璃效果组件 */
+@layer components {
+  .glass-card {
+    @apply bg-white/75 backdrop-blur-xl border border-white/30;
+    @apply shadow-[0_8px_32px_rgba(168,213,94,0.12)];
+    @apply transition-all duration-300;
+  }
+  
+  .glass-card:hover {
+    @apply shadow-[0_12px_48px_rgba(168,213,94,0.18)];
+    @apply -translate-y-0.5;
+  }
+  
+  .glass-input {
+    @apply bg-white/60 backdrop-blur-md border-2 border-border/50;
+    @apply focus:border-primary focus:bg-white/80;
+    @apply transition-all duration-200;
+  }
+  
+  .glass-button {
+    @apply bg-gradient-to-r from-primary to-primary/80;
+    @apply shadow-[0_4px_16px_rgba(168,213,94,0.25)];
+    @apply hover:shadow-[0_8px_24px_rgba(168,213,94,0.35)];
+    @apply hover:-translate-y-0.5;
+    @apply transition-all duration-200;
+  }
+  
+  .glass-button-outline {
+    @apply bg-white/60 backdrop-blur-md border-2 border-primary;
+    @apply text-primary hover:bg-primary/10;
+    @apply transition-all duration-200;
+  }
+  
+  /* 植物滑块 */
+  .slider-plant [role="slider"] {
+    @apply bg-gradient-to-br from-primary to-primary/70;
+    @apply shadow-[0_2px_8px_rgba(168,213,94,0.3)];
+    @apply border-2 border-white/50;
+  }
+  
+  .slider-plant [role="slider"]:hover {
+    @apply shadow-[0_4px_12px_rgba(168,213,94,0.4)];
+    @apply scale-110;
+  }
 }
 
 /* 水墨渐显动画 */
@@ -123,17 +155,66 @@ body,
   }
 }
 
-.ink-wash-enter {
-  animation: ink-wash-appear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+/* 植物生长动画 */
+@keyframes plant-grow {
+  from {
+    stroke-dashoffset: 100;
+    opacity: 0.5;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
 }
 
-/* 毛玻璃效果 */
+/* 三层水墨晕染关键帧 */
+@keyframes ink-layer-1 {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 0.05; transform: scale(1); }
+}
+
+@keyframes ink-layer-2 {
+  0% { opacity: 0; transform: scale(0.95); }
+  50% { opacity: 0.08; }
+  100% { opacity: 0.12; transform: scale(1); }
+}
+
+@keyframes ink-layer-3 {
+  0% { opacity: 0; transform: scale(0.98); }
+  33% { opacity: 0; }
+  66% { opacity: 0.10; }
+  100% { opacity: 0.18; transform: scale(1); }
+}
+
+/* 毛玻璃效果辅助 */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.dark .glass-effect {
-  background: rgba(20, 30, 20, 0.92);
+/* 叶片阴影效果 */
+.leaf-shadow {
+  filter: drop-shadow(0 4px 12px rgba(168, 213, 94, 0.15));
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.7);
 }

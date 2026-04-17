@@ -1,93 +1,86 @@
-// Chrome Storage API wrapper
 import { UserProfile, InteractionLog, PlantGrowth } from '@/types/extension';
 
+// Storage keys
+const STORAGE_KEYS = {
+  USER_PROFILE: 'userProfile',
+  INTERACTION_LOG: 'interactionLog',
+  PLANT_GROWTH: 'plantGrowth',
+} as const;
+
+// Default values
 const DEFAULT_PROFILE: UserProfile = {
   nickname: '朋友',
   mbtiType: 'INFP',
-  customInterval: 60,
-  quietHours: ['22:00-06:00'],
+  hydrationInterval: 45,    // 喝水：45分钟（科学建议）
+  eyeCareInterval: 20,       // 眼睛：20分钟（20-20-20法则）
+  movementInterval: 60,      // 运动：60分钟（久坐提醒）
+  quietHours: [],
   notificationPosition: 'top_right',
   minimalMode: false,
 };
 
+// Storage API
 export const storage = {
-  // Get user profile
   async getUserProfile(): Promise<UserProfile> {
-    try {
-      const result = await chrome.storage.local.get('userProfile');
-      return result.userProfile || DEFAULT_PROFILE;
-    } catch (error) {
-      console.error('Error getting user profile:', error);
-      return DEFAULT_PROFILE;
-    }
+    const result = await chrome.storage.local.get(STORAGE_KEYS.USER_PROFILE);
+    return result[STORAGE_KEYS.USER_PROFILE] || DEFAULT_PROFILE;
   },
 
-  // Set user profile
-  async setUserProfile(profile: Partial<UserProfile>): Promise<void> {
-    try {
-      const current = await this.getUserProfile();
-      await chrome.storage.local.set({
-        userProfile: { ...current, ...profile },
-      });
-    } catch (error) {
-      console.error('Error setting user profile:', error);
-    }
+  async setUserProfile(profile: UserProfile): Promise<void> {
+    await chrome.storage.local.set({
+      [STORAGE_KEYS.USER_PROFILE]: profile,
+    });
   },
 
-  // Add interaction log
+  async getInteractionLog(): Promise<InteractionLog[]> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.INTERACTION_LOG);
+    return result[STORAGE_KEYS.INTERACTION_LOG] || [];
+  },
+
   async addInteractionLog(log: InteractionLog): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get('interactionLog');
-      const logs: InteractionLog[] = result.interactionLog || [];
-      logs.push(log);
-      
-      // Keep only last 100 logs
-      if (logs.length > 100) {
-        logs.splice(0, logs.length - 100);
-      }
-      
-      await chrome.storage.local.set({ interactionLog: logs });
-    } catch (error) {
-      console.error('Error adding interaction log:', error);
-    }
+    const logs = await this.getInteractionLog();
+    logs.push(log);
+    // Keep only last 100 logs
+    const recentLogs = logs.slice(-100);
+    await chrome.storage.local.set({
+      [STORAGE_KEYS.INTERACTION_LOG]: recentLogs,
+    });
   },
 
-  // Get interaction logs
-  async getInteractionLogs(): Promise<InteractionLog[]> {
-    try {
-      const result = await chrome.storage.local.get('interactionLog');
-      return result.interactionLog || [];
-    } catch (error) {
-      console.error('Error getting interaction logs:', error);
-      return [];
-    }
-  },
-
-  // Get plant growth
   async getPlantGrowth(): Promise<PlantGrowth> {
-    try {
-      const result = await chrome.storage.local.get('plantGrowth');
-      return result.plantGrowth || {
-        level: 0,
-        totalCompletions: 0,
-        unlockedForms: [],
-      };
-    } catch (error) {
-      console.error('Error getting plant growth:', error);
-      return { level: 0, totalCompletions: 0, unlockedForms: [] };
-    }
+    const result = await chrome.storage.local.get(STORAGE_KEYS.PLANT_GROWTH);
+    return result[STORAGE_KEYS.PLANT_GROWTH] || {
+      level: 1,
+      totalCompletions: 0,
+      unlockedForms: ['bamboo_sprout'],
+    };
   },
 
-  // Update plant growth
-  async updatePlantGrowth(completions: number): Promise<void> {
-    try {
-      const growth = await this.getPlantGrowth();
-      growth.totalCompletions += completions;
-      growth.level = Math.floor(growth.totalCompletions / 10);
-      
-      await chrome.storage.local.set({ plantGrowth: growth });
-    } catch (error) {
-      console.error('Error updating plant growth:', error);
-    }
+  async updatePlantGrowth(growth: Partial<PlantGrowth>): Promise<void> {
+    const current = await this.getPlantGrowth();
+    await chrome.storage.local.set({
+      [STORAGE_KEYS.PLANT_GROWTH]: { ...current, ...growth },
+    });
+  },
+
+  async clearAllData(): Promise<void> {
+    await chrome.storage.local.clear();
   },
 };
+
+// Helper functions for compatibility
+export async function loadUserProfile(): Promise<UserProfile> {
+  return storage.getUserProfile();
+}
+
+export async function saveUserProfile(profile: UserProfile): Promise<void> {
+  return storage.setUserProfile(profile);
+}
+
+export async function loadPlantGrowth(): Promise<PlantGrowth> {
+  return storage.getPlantGrowth();
+}
+
+export async function savePlantGrowth(growth: PlantGrowth): Promise<void> {
+  return storage.updatePlantGrowth(growth);
+}

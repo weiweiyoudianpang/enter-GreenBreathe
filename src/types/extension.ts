@@ -12,7 +12,10 @@ export type NotificationPosition = 'top_right' | 'top_left' | 'bottom_right' | '
 export interface UserProfile {
   nickname: string;
   mbtiType: MBTIType;
-  customInterval: number; // minutes
+  // 三个独立的提醒间隔（分钟，0表示不提醒）
+  hydrationInterval: number;    // 喝水提醒间隔（默认45分钟）
+  eyeCareInterval: number;       // 眼睛休息间隔（默认20分钟）
+  movementInterval: number;      // 身体活动间隔（默认60分钟）
   quietHours: string[]; // ["22:00-06:00"]
   notificationPosition: NotificationPosition;
   minimalMode: boolean;

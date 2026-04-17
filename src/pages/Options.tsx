@@ -1,130 +1,244 @@
-import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
-import '@/index.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { storage } from '@/lib/storage';
-import { UserProfile, MBTIType, NotificationPosition } from '@/types/extension';
+import { Separator } from '@/components/ui/separator';
+import { UserProfile } from '@/types/extension';
+import { loadUserProfile, saveUserProfile } from '@/lib/storage';
 
-function OptionsPage() {
-  const [profile, setProfile] = useState<UserProfile>({
-    nickname: '朋友',
-    mbtiType: 'INFP',
-    customInterval: 60,
-    quietHours: ['22:00-06:00'],
-    notificationPosition: 'top_right',
-    minimalMode: false,
-  });
-  
-  const [saved, setSaved] = useState(false);
+const defaultProfile: UserProfile = {
+  nickname: '朋友',
+  mbtiType: 'INFP',
+  hydrationInterval: 45,     // 喝水：45分钟（科学建议）
+  eyeCareInterval: 20,        // 眼睛：20分钟（20-20-20法则）
+  movementInterval: 60,       // 运动：60分钟（久坐提醒）
+  quietHours: [],
+  theme: 'glass_plant',
+  notificationPosition: 'top_right',
+  minimalMode: false,
+  soundEnabled: false,
+  soundVolume: 30,
+  customImage: null,
+};
+
+const mbtiTypes = [
+  { value: 'INTJ', label: 'INTJ - 建筑师' },
+  { value: 'INTP', label: 'INTP - 逻辑学家' },
+  { value: 'INFP', label: 'INFP - 调停者' },
+  { value: 'INFJ', label: 'INFJ - 提倡者' },
+  { value: 'ESTJ', label: 'ESTJ - 总经理' },
+  { value: 'ENFP', label: 'ENFP - 竞选者' },
+  { value: 'ISTP', label: 'ISTP - 鉴赏家' },
+];
+
+export default function Options() {
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   useEffect(() => {
-    loadProfile();
+    loadUserProfile().then((loaded) => {
+      if (loaded) {
+        setProfile(loaded);
+      }
+    });
   }, []);
 
-  const loadProfile = async () => {
-    const data = await storage.getUserProfile();
-    setProfile(data);
-  };
-
   const handleSave = async () => {
-    await storage.setUserProfile(profile);
-    
-    // Update alarm
-    await chrome.runtime.sendMessage({ type: 'UPDATE_ALARM' });
-    
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setSaveStatus('saving');
+    await saveUserProfile(profile);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
-  const handleTest = async () => {
-    await chrome.runtime.sendMessage({ type: 'TRIGGER_TEST_NOTIFICATION' });
+  const handleTest = () => {
+    // 发送消息给content script触发测试通知
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { 
+          type: 'TEST_NOTIFICATION',
+          profile: profile
+        });
+      }
+    });
   };
 
-  const mbtiTypes: MBTIType[] = [
-    'INTJ', 'INTP', 'ENTJ', 'ENTP',
-    'INFJ', 'INFP', 'ENFJ', 'ENFP',
-    'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
-    'ISTP', 'ISFP', 'ESTP', 'ESFP',
-  ];
+  const formatIntervalLabel = (minutes: number) => {
+    if (minutes === 0) return '不提醒';
+    if (minutes < 60) return `${minutes}分钟`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}小时${mins}分钟` : `${hours}小时`;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">青植呼吸 GreenBreathe</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      <div className="container max-w-4xl mx-auto py-12 px-4">
+        {/* 顶部标题 */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+              <span className="text-2xl">🌿</span>
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              青植呼吸设置
+            </h1>
+          </div>
           <p className="text-muted-foreground">用温柔的方式，提醒你关爱自己</p>
         </div>
 
         <div className="space-y-6">
-          <Card className="glass-effect border-primary/20 shadow-medium">
+          {/* 基础设置 */}
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle>基础设置</CardTitle>
-              <CardDescription>个性化你的健康关怀体验</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">👤</span>
+                基础设置
+              </CardTitle>
+              <CardDescription>个性化你的健康提醒体验</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="nickname">昵称</Label>
                 <Input
                   id="nickname"
-                  placeholder="你希望我怎么称呼你？"
                   value={profile.nickname}
                   onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
+                  placeholder="输入你的昵称"
+                  className="glass-input"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="mbti">MBTI类型</Label>
-                <Select
-                  value={profile.mbtiType}
-                  onValueChange={(value) => setProfile({ ...profile, mbtiType: value as MBTIType })}
-                >
-                  <SelectTrigger id="mbti">
+                <Label htmlFor="mbti">MBTI性格类型</Label>
+                <Select value={profile.mbtiType} onValueChange={(value) => setProfile({ ...profile, mbtiType: value })}>
+                  <SelectTrigger className="glass-input">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {mbtiTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  不同性格类型会收到不同风格的关怀语
+                  根据你的性格类型定制鼓励语表达方式
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 提醒间隔设置 */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">⏰</span>
+                提醒间隔
+              </CardTitle>
+              <CardDescription>
+                为每种健康提醒设置不同的间隔时间，0分钟表示不提醒
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* 喝水提醒 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-base">
+                    <span className="text-lg">💧</span>
+                    喝水提醒
+                  </Label>
+                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                    {formatIntervalLabel(profile.hydrationInterval)}
+                  </span>
+                </div>
+                <Slider
+                  value={[profile.hydrationInterval]}
+                  onValueChange={(value) => setProfile({ ...profile, hydrationInterval: value[0] })}
+                  min={0}
+                  max={120}
+                  step={5}
+                  className="slider-plant"
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 科学建议：每30-60分钟补充150-200ml水分，保持身体水分平衡
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>提醒间隔：{profile.customInterval} 分钟</Label>
-                <Slider
-                  value={[profile.customInterval]}
-                  onValueChange={([value]) => setProfile({ ...profile, customInterval: value })}
-                  min={30}
-                  max={120}
-                  step={15}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>30分钟</span>
-                  <span>120分钟</span>
+              <Separator className="bg-border/50" />
+
+              {/* 眼睛休息提醒 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-base">
+                    <span className="text-lg">👁️</span>
+                    眼睛休息提醒
+                  </Label>
+                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                    {formatIntervalLabel(profile.eyeCareInterval)}
+                  </span>
                 </div>
+                <Slider
+                  value={[profile.eyeCareInterval]}
+                  onValueChange={(value) => setProfile({ ...profile, eyeCareInterval: value[0] })}
+                  min={0}
+                  max={120}
+                  step={5}
+                  className="slider-plant"
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 科学建议：每20分钟执行20-20-20法则（看20英尺外20秒），有效缓解视疲劳
+                </p>
               </div>
 
+              <Separator className="bg-border/50" />
+
+              {/* 身体活动提醒 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-base">
+                    <span className="text-lg">🏃</span>
+                    身体活动提醒
+                  </Label>
+                  <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                    {formatIntervalLabel(profile.movementInterval)}
+                  </span>
+                </div>
+                <Slider
+                  value={[profile.movementInterval]}
+                  onValueChange={(value) => setProfile({ ...profile, movementInterval: value[0] })}
+                  min={0}
+                  max={120}
+                  step={5}
+                  className="slider-plant"
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 科学建议：每60分钟站立活动2-5分钟，促进血液循环，改善久坐伤害
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 外观设置 */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">🎨</span>
+                外观设置
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="position">弹窗位置</Label>
                 <Select
                   value={profile.notificationPosition}
-                  onValueChange={(value) => 
-                    setProfile({ ...profile, notificationPosition: value as NotificationPosition })
-                  }
+                  onValueChange={(value: any) => setProfile({ ...profile, notificationPosition: value })}
                 >
-                  <SelectTrigger id="position">
+                  <SelectTrigger className="glass-input">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -137,44 +251,40 @@ function OptionsPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>极简模式</Label>
-                  <p className="text-xs text-muted-foreground">关闭所有弹窗提醒</p>
+                <div className="space-y-1">
+                  <Label>提示音</Label>
+                  <p className="text-xs text-muted-foreground">播放柔和的提示音</p>
                 </div>
-                <Switch
-                  checked={profile.minimalMode}
-                  onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })}
-                />
+                <Switch checked={profile.soundEnabled} onCheckedChange={(checked) => setProfile({ ...profile, soundEnabled: checked })} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>极简模式</Label>
+                  <p className="text-xs text-muted-foreground">仅显示状态栏图标</p>
+                </div>
+                <Switch checked={profile.minimalMode} onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })} />
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex gap-4">
-            <Button onClick={handleSave} className="flex-1 bg-primary hover:bg-primary-dark">
-              {saved ? '✓ 已保存' : '保存设置'}
+          {/* 保存按钮 */}
+          <div className="flex gap-3">
+            <Button onClick={handleSave} className="flex-1 glass-button" size="lg" disabled={saveStatus === 'saving'}>
+              {saveStatus === 'saving' && '保存中...'}
+              {saveStatus === 'saved' && '✓ 已保存'}
+              {saveStatus === 'idle' && '保存设置'}
             </Button>
-            <Button onClick={handleTest} variant="outline">
-              测试提醒
+            <Button onClick={handleTest} variant="outline" size="lg" className="glass-button-outline">
+              立即测试
             </Button>
           </div>
 
-          <Card className="glass-effect border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-sm">关于</CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs text-muted-foreground space-y-2">
-              <p>青植呼吸 v1.0.0</p>
-              <p>所有数据本地存储，零云端同步，完全保护你的隐私</p>
-              <p>每条健康指令都基于真实科学文献，但表达方式因性格而异</p>
-            </CardContent>
-          </Card>
+          <p className="text-center text-xs text-muted-foreground">
+            所有数据仅保存在本地，绝不上传云端 🔒
+          </p>
         </div>
       </div>
     </div>
   );
-}
-
-const container = document.getElementById('options-root');
-if (container) {
-  createRoot(container).render(<OptionsPage />);
 }
