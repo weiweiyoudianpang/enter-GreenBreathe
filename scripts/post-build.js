@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
-const distDir = path.join(rootDir, 'dist');
+const distDir = path.join(rootDir, 'dist-extension');
 
 // Copy manifest.json
 const manifestSrc = path.join(publicDir, 'manifest.json');

@@ -25,7 +25,8 @@ export default defineConfig(({ mode }) => {
         },
       },
       build: {
-        outDir: 'dist',
+        outDir: 'dist-extension',
+        emptyOutDir: true,
         rollupOptions: {
           input: {
             options: path.resolve(__dirname, 'options.html'),

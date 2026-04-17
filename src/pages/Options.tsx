@@ -1,4 +1,6 @@
+import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
+import '@/index.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,16 +15,13 @@ import { loadUserProfile, saveUserProfile } from '@/lib/storage';
 const defaultProfile: UserProfile = {
   nickname: '朋友',
   mbtiType: 'INFP',
-  hydrationInterval: 45,     // 喝水：45分钟（科学建议）
-  eyeCareInterval: 20,        // 眼睛：20分钟（20-20-20法则）
-  movementInterval: 60,       // 运动：60分钟（久坐提醒）
+  hydrationInterval: 45,
+  eyeCareInterval: 20,
+  movementInterval: 60,
   quietHours: [],
-  theme: 'glass_plant',
   notificationPosition: 'top_right',
   minimalMode: false,
   soundEnabled: false,
-  soundVolume: 30,
-  customImage: null,
 };
 
 const mbtiTypes = [
@@ -35,35 +34,28 @@ const mbtiTypes = [
   { value: 'ISTP', label: 'ISTP - 鉴赏家' },
 ];
 
-export default function Options() {
+function OptionsPage() {
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   useEffect(() => {
     loadUserProfile().then((loaded) => {
-      if (loaded) {
-        setProfile(loaded);
-      }
+      if (loaded) setProfile(loaded);
     });
   }, []);
 
   const handleSave = async () => {
     setSaveStatus('saving');
     await saveUserProfile(profile);
+    // 通知 background 更新 alarms
+    chrome.runtime.sendMessage({ type: 'UPDATE_ALARM' });
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const handleTest = () => {
-    // 发送消息给content script触发测试通知
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { 
-          type: 'TEST_NOTIFICATION',
-          profile: profile
-        });
-      }
-    });
+    // 通过 background service worker 触发测试通知
+    chrome.runtime.sendMessage({ type: 'TRIGGER_TEST_NOTIFICATION' });
   };
 
   const formatIntervalLabel = (minutes: number) => {
@@ -114,7 +106,10 @@ export default function Options() {
 
               <div className="space-y-2">
                 <Label htmlFor="mbti">MBTI性格类型</Label>
-                <Select value={profile.mbtiType} onValueChange={(value) => setProfile({ ...profile, mbtiType: value })}>
+                <Select
+                  value={profile.mbtiType}
+                  onValueChange={(value) => setProfile({ ...profile, mbtiType: value as UserProfile['mbtiType'] })}
+                >
                   <SelectTrigger className="glass-input">
                     <SelectValue />
                   </SelectTrigger>
@@ -165,7 +160,7 @@ export default function Options() {
                   className="slider-plant"
                 />
                 <p className="text-xs text-muted-foreground">
-                  💡 科学建议：每30-60分钟补充150-200ml水分，保持身体水分平衡
+                  科学建议：每30-60分钟补充150-200ml水分，保持身体水分平衡
                 </p>
               </div>
 
@@ -191,7 +186,7 @@ export default function Options() {
                   className="slider-plant"
                 />
                 <p className="text-xs text-muted-foreground">
-                  💡 科学建议：每20分钟执行20-20-20法则（看20英尺外20秒），有效缓解视疲劳
+                  科学建议：每20分钟执行20-20-20法则（看20英尺外20秒），有效缓解视疲劳
                 </p>
               </div>
 
@@ -217,7 +212,7 @@ export default function Options() {
                   className="slider-plant"
                 />
                 <p className="text-xs text-muted-foreground">
-                  💡 科学建议：每60分钟站立活动2-5分钟，促进血液循环，改善久坐伤害
+                  科学建议：每60分钟站立活动2-5分钟，促进血液循环，改善久坐伤害
                 </p>
               </div>
             </CardContent>
@@ -236,7 +231,7 @@ export default function Options() {
                 <Label htmlFor="position">弹窗位置</Label>
                 <Select
                   value={profile.notificationPosition}
-                  onValueChange={(value: any) => setProfile({ ...profile, notificationPosition: value })}
+                  onValueChange={(value) => setProfile({ ...profile, notificationPosition: value as UserProfile['notificationPosition'] })}
                 >
                   <SelectTrigger className="glass-input">
                     <SelectValue />
@@ -255,7 +250,10 @@ export default function Options() {
                   <Label>提示音</Label>
                   <p className="text-xs text-muted-foreground">播放柔和的提示音</p>
                 </div>
-                <Switch checked={profile.soundEnabled} onCheckedChange={(checked) => setProfile({ ...profile, soundEnabled: checked })} />
+                <Switch
+                  checked={profile.soundEnabled ?? false}
+                  onCheckedChange={(checked) => setProfile({ ...profile, soundEnabled: checked })}
+                />
               </div>
 
               <div className="flex items-center justify-between">
@@ -263,14 +261,22 @@ export default function Options() {
                   <Label>极简模式</Label>
                   <p className="text-xs text-muted-foreground">仅显示状态栏图标</p>
                 </div>
-                <Switch checked={profile.minimalMode} onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })} />
+                <Switch
+                  checked={profile.minimalMode}
+                  onCheckedChange={(checked) => setProfile({ ...profile, minimalMode: checked })}
+                />
               </div>
             </CardContent>
           </Card>
 
           {/* 保存按钮 */}
           <div className="flex gap-3">
-            <Button onClick={handleSave} className="flex-1 glass-button" size="lg" disabled={saveStatus === 'saving'}>
+            <Button
+              onClick={handleSave}
+              className="flex-1 glass-button"
+              size="lg"
+              disabled={saveStatus === 'saving'}
+            >
               {saveStatus === 'saving' && '保存中...'}
               {saveStatus === 'saved' && '✓ 已保存'}
               {saveStatus === 'idle' && '保存设置'}
@@ -287,4 +293,10 @@ export default function Options() {
       </div>
     </div>
   );
+}
+
+// 挂载 React 到 options-root
+const container = document.getElementById('options-root');
+if (container) {
+  createRoot(container).render(<OptionsPage />);
 }

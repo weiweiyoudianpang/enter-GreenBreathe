@@ -19,6 +19,11 @@ export interface UserProfile {
   quietHours: string[]; // ["22:00-06:00"]
   notificationPosition: NotificationPosition;
   minimalMode: boolean;
+  // 可选扩展字段
+  theme?: string;
+  soundEnabled?: boolean;
+  soundVolume?: number;
+  customImage?: string | null;
 }
 
 export interface InteractionLog {
