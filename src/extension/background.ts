@@ -115,7 +115,15 @@ async function triggerNotification(taskType: TaskType) {
   
   // 🎯 新架构：使用独立窗口显示通知，不依赖标签页
   // Store notification data in chrome.storage for the notification window to read
-  await chrome.storage.local.set({ pendingNotification: notificationData });
+  await chrome.storage.local.set({ 
+    pendingNotification: notificationData,
+    userProfile: profile  // Also save profile for easier access
+  });
+  
+  console.log('[GreenBreathe Background] Notification data stored in chrome.storage');
+  
+  // Add a small delay to ensure storage write is complete
+  await new Promise(resolve => setTimeout(resolve, 100));
   
   // Get card size to determine window dimensions
   const cardSize = profile.cardSize || 'medium';
@@ -157,7 +165,7 @@ async function triggerNotification(taskType: TaskType) {
     
     console.log('[GreenBreathe Background] Notification window created:', notificationWindow.id);
     
-    // Auto-close after 10 seconds if user doesn't interact
+    // Auto-close after 30 seconds if user doesn't interact
     setTimeout(async () => {
       try {
         if (notificationWindow.id) {
@@ -168,7 +176,7 @@ async function triggerNotification(taskType: TaskType) {
         // Window may have been closed by user
         console.log('[GreenBreathe Background] Window already closed');
       }
-    }, 10000);
+    }, 30000);
   } catch (error) {
     console.error('[GreenBreathe Background] Error creating notification window:', error);
   }

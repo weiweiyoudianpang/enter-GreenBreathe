@@ -9,17 +9,36 @@ function NotificationWindow() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Get notification data and profile from chrome.storage
-    chrome.storage.local.get(['pendingNotification', 'userProfile'], (result) => {
-      if (result.pendingNotification) {
-        setNotificationData(result.pendingNotification);
-        setProfile(result.userProfile);
-        // Clear pending notification
-        chrome.storage.local.remove('pendingNotification');
-        // Trigger show animation
-        setTimeout(() => setShow(true), 100);
-      }
-    });
+    console.log('[GreenBreathe Notification] Component mounted, fetching data...');
+    
+    // Add a small delay to ensure storage is ready
+    const fetchData = () => {
+      chrome.storage.local.get(['pendingNotification', 'userProfile'], (result) => {
+        console.log('[GreenBreathe Notification] Storage result:', result);
+        
+        if (chrome.runtime.lastError) {
+          console.error('[GreenBreathe Notification] Storage error:', chrome.runtime.lastError);
+          return;
+        }
+        
+        if (result.pendingNotification) {
+          console.log('[GreenBreathe Notification] Data loaded successfully');
+          setNotificationData(result.pendingNotification);
+          setProfile(result.userProfile);
+          // Clear pending notification
+          chrome.storage.local.remove('pendingNotification');
+          // Trigger show animation
+          setTimeout(() => setShow(true), 100);
+        } else {
+          console.warn('[GreenBreathe Notification] No pending notification found');
+          // Retry after a short delay
+          setTimeout(fetchData, 200);
+        }
+      });
+    };
+    
+    // Start fetching with a small initial delay
+    setTimeout(fetchData, 50);
   }, []);
 
   const handleClose = async () => {
