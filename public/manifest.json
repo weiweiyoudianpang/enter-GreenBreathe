@@ -33,7 +33,8 @@
     "alarms",
     "activeTab",
     "tabs",
-    "scripting"
+    "scripting",
+    "system.display"
   ],
   "host_permissions": [
     "http://*/*",

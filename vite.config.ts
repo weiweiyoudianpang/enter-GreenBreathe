@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
           input: {
             options: path.resolve(__dirname, 'options.html'),
             popup: path.resolve(__dirname, 'popup.html'),
+            notification: path.resolve(__dirname, 'public/notification.html'),
             background: path.resolve(__dirname, 'src/extension/background.ts'),
             content: path.resolve(__dirname, 'src/extension/content.ts'),
           },

@@ -96,7 +96,7 @@ async function triggerNotification(taskType: TaskType) {
   
   // Check quiet hours
   if (isQuietHours(profile.quietHours)) {
-    console.log('Quiet hours - skipping notification');
+    console.log('[GreenBreathe Background] Quiet hours - skipping notification');
     return;
   }
   
@@ -111,38 +111,66 @@ async function triggerNotification(taskType: TaskType) {
     timestamp: Date.now(),
   };
   
-  // ⚠️ 关键修复：当用户在 options 页面点击测试时，active tab 是 chrome-extension:// 页面
-  // content.ts 不会注入到 extension 页面，需要找一个真正的 http/https tab
-  const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  const activeTab = activeTabs[0];
+  console.log('[GreenBreathe Background] Triggering notification:', taskType);
   
-  let targetTabId: number | undefined;
+  // 🎯 新架构：使用独立窗口显示通知，不依赖标签页
+  // Store notification data in chrome.storage for the notification window to read
+  await chrome.storage.local.set({ pendingNotification: notificationData });
   
-  if (activeTab?.url?.startsWith('http')) {
-    // Active tab 是普通网页，直接使用
-    targetTabId = activeTab.id;
-  } else {
-    // Active tab 是 extension 页面（options/popup），找一个普通网页
-    const allTabs = await chrome.tabs.query({ currentWindow: true });
-    const httpTab = allTabs.find(tab => tab.url?.startsWith('http'));
-    targetTabId = httpTab?.id;
-    if (targetTabId) {
-      console.log('[GreenBreathe] Active tab is extension page, using tab:', httpTab?.url);
-    } else {
-      console.warn('[GreenBreathe] No http/https tab found to show notification');
+  // Get card size to determine window dimensions
+  const cardSize = profile.cardSize || 'medium';
+  const sizeMap = {
+    small: { width: 960, height: 570 },
+    medium: { width: 1280, height: 760 },
+    large: { width: 1600, height: 950 }
+  };
+  const { width, height } = sizeMap[cardSize];
+  
+  // Calculate centered position (with fallback if system.display is not available)
+  let left = 200;
+  let top = 100;
+  
+  try {
+    const displays = await chrome.system.display.getInfo();
+    if (displays && displays.length > 0) {
+      const primaryDisplay = displays[0];
+      const screenWidth = primaryDisplay.workArea.width;
+      const screenHeight = primaryDisplay.workArea.height;
+      left = Math.round((screenWidth - width) / 2);
+      top = Math.round((screenHeight - height) / 2);
     }
+  } catch (e) {
+    console.log('[GreenBreathe Background] Could not get display info, using default position');
   }
-
-  if (targetTabId) {
-    try {
-      await chrome.tabs.sendMessage(targetTabId, {
-        type: 'SHOW_NOTIFICATION',
-        data: notificationData,
-      });
-      console.log('[GreenBreathe] Notification sent to tab', targetTabId);
-    } catch (error) {
-      console.error('[GreenBreathe] Error sending to content script:', error);
-    }
+  
+  // Create a standalone notification window
+  try {
+    const notificationWindow = await chrome.windows.create({
+      url: chrome.runtime.getURL('notification.html'),
+      type: 'popup',
+      width: width + 20,  // Add padding for window chrome
+      height: height + 40,
+      left: left,
+      top: top,
+      focused: true,
+    });
+    
+    console.log('[GreenBreathe Background] Notification window created:', notificationWindow.id);
+    
+    // Auto-close after 10 seconds if user doesn't interact
+    setTimeout(async () => {
+      try {
+        if (notificationWindow.id) {
+          await chrome.windows.remove(notificationWindow.id);
+          console.log('[GreenBreathe Background] Notification window auto-closed');
+        }
+      } catch (e) {
+        // Window may have been closed by user
+        console.log('[GreenBreathe Background] Window already closed');
+      }
+    }, 10000);
+  } catch (error) {
+    console.error('[GreenBreathe Background] Error creating notification window:', error);
   }
 }
 

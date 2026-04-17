@@ -391,7 +391,6 @@ function OptionsPage() {
                   </p>
                 </div>
               </div>
-              </div>
             </CardContent>
           </Card>
 
