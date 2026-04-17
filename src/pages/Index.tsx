@@ -159,14 +159,14 @@ function NotificationCard({
   };
   const { width, height } = sizeMap[cardSize];
 
-  // High-quality background images (user provided 2K images)
-  const bgImages = [
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a4ec.png',  // 铜钱草金鱼
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/f5db.png',  // 薄荷摄影
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/e7ab.png'   // 办公室禅意绿猫
+  // High-quality background images (user provided 2K images) - Using local public resources
+  const bgImageFiles = [
+    '/copper-grass-goldfish.png',  // 铜钱草金鱼
+    '/mint-photography.png',        // 薄荷摄影
+    '/office-zen-green-cat.png'     // 办公室禅意绿猫
   ];
   // Random background image
-  const bgImage = bgImages[Math.floor(Math.random() * bgImages.length)];
+  const bgImage = bgImageFiles[Math.floor(Math.random() * bgImageFiles.length)];
 
   return (
     <div

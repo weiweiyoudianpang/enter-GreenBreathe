@@ -99,6 +99,8 @@ function isUserActivelyInteracting(): boolean {
 
 // 🎯 显示通知 with 智能延迟重试
 async function showNotification(data: NotificationData, retryCount = 0) {
+  console.log('[GreenBreathe Content] showNotification called, retryCount:', retryCount);
+  
   // 智能避让：检测用户专注状态
   if (shouldDelayNotification() && retryCount < 3) {
     console.log(`[GreenBreathe] Retry attempt ${retryCount + 1}/3 after 30s`);
@@ -117,8 +119,12 @@ async function showNotification(data: NotificationData, retryCount = 0) {
   const result = await chrome.storage.local.get('userProfile');
   const position = result.userProfile?.notificationPosition || 'top_right';
   
+  console.log('[GreenBreathe Content] Creating notification UI...');
+  
   // Create notification UI
   const notification = await createNotificationUI(data, position);
+  
+  console.log('[GreenBreathe Content] Notification UI created, injecting into page...');
   
   // Inject into page
   let container = document.getElementById('green-breathe-notification-root');
@@ -132,10 +138,17 @@ async function showNotification(data: NotificationData, retryCount = 0) {
   // Append notification
   container.appendChild(notification);
   
+  console.log('[GreenBreathe Content] Notification injected, triggering animation...');
+  
   // Trigger entrance animation — 必须加在 shadowRoot 内的 .notification-card 上
   setTimeout(() => {
     const card = notification.shadowRoot?.querySelector('.notification-card') as HTMLElement;
-    if (card) card.classList.add('show');
+    if (card) {
+      card.classList.add('show');
+      console.log('[GreenBreathe Content] Animation triggered');
+    } else {
+      console.error('[GreenBreathe Content] Card element not found in shadow DOM');
+    }
   }, 100);
   
   // Auto dismiss after 8 seconds
@@ -184,14 +197,15 @@ async function createNotificationUI(
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   
-  // High-quality background images (user provided 2K images)
-  const bgImages = [
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a4ec.png',  // 铜钱草金鱼
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/f5db.png',  // 薄荷摄影
-    'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/e7ab.png'   // 办公室禅意绿猫
+  // High-quality background images (user provided 2K images) - Using local extension resources
+  const bgImageFiles = [
+    'copper-grass-goldfish.png',  // 铜钱草金鱼
+    'mint-photography.png',        // 薄荷摄影
+    'office-zen-green-cat.png'     // 办公室禅意绿猫
   ];
-  // Random background image
-  const bgImage = bgImages[Math.floor(Math.random() * bgImages.length)];
+  // Random background image - Use chrome.runtime.getURL to get extension resource URL
+  const randomImageFile = bgImageFiles[Math.floor(Math.random() * bgImageFiles.length)];
+  const bgImage = chrome.runtime.getURL(`images/${randomImageFile}`);
   
   // Create HTML
   shadowRoot.innerHTML = `
@@ -343,6 +357,29 @@ async function createNotificationUI(
       </div>
     </div>
   `;
+  
+  // 🔥 关键修复：预加载背景图片，确保图片加载完成后再返回
+  // 这样可以避免 "只在F12打开时才显示" 的竞态条件bug
+  await new Promise<void>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      console.log('[GreenBreathe Content] Background image loaded:', bgImage);
+      resolve();
+    };
+    img.onerror = (error) => {
+      console.error('[GreenBreathe Content] Background image failed to load:', bgImage, error);
+      // 即使图片加载失败，也继续显示通知（降级处理）
+      resolve();
+    };
+    // 设置超时，避免无限等待
+    setTimeout(() => {
+      console.warn('[GreenBreathe Content] Image load timeout, proceeding anyway');
+      resolve();
+    }, 3000);
+    img.src = bgImage;
+  });
+  
+  console.log('[GreenBreathe Content] Background image ready, setting up event listeners');
   
   // Add event listeners
   const dismissBtn = shadowRoot.querySelector('.action-dismiss') as HTMLButtonElement;
