@@ -1,4 +1,4 @@
-function h(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function b(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const n=document.querySelectorAll("video");for(const o of n){const r=o.getBoundingClientRect(),c=r.width>200&&r.height>150;if(!o.paused&&o.currentTime>0&&c)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const o of t)if(!o.paused&&o.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let u=0,f=0;document.addEventListener("mousemove",()=>{u=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{f=Date.now()},{passive:!0});function x(){const e=Date.now();return e-u<5e3||e-f<5e3}async function l(e,n=0){if(b()&&n<3){console.log(`[GreenBreathe] Retry attempt ${n+1}/3 after 30s`),setTimeout(()=>l(e,n+1),3e4);return}if(x()&&n===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>l(e,n),1e4);return}const a=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",i=await y(e,a);let o=document.getElementById("green-breathe-notification-root");o||(o=h()),o.innerHTML="",o.appendChild(i),setTimeout(()=>{const r=i.shadowRoot?.querySelector(".notification-card");r&&r.classList.add("show")},100),setTimeout(()=>{p(i)},8e3)}async function y(e,n){const t=document.createElement("div");t.className=`green-breathe-notification ${n}`;const a=t.attachShadow({mode:"open"}),o=(await chrome.storage.local.get("userProfile")).userProfile?.mbtiType||"INFP",r=o.includes("T"),c=o.includes("N");let s="";r?s=e.instruction.mbtiAdaptation.T:c?s=e.instruction.mbtiAdaptation.N:s=e.instruction.mbtiAdaptation.F;const d=["了解啦","谢谢关心","OK","收到","这就去"],m=d[Math.floor(Math.random()*d.length)];return a.innerHTML=`
+function x(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function v(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const n=document.querySelectorAll("video");for(const o of n){const r=o.getBoundingClientRect(),c=r.width>200&&r.height>150;if(!o.paused&&o.currentTime>0&&c)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const o of t)if(!o.paused&&o.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let f=0,g=0;document.addEventListener("mousemove",()=>{f=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{g=Date.now()},{passive:!0});function y(){const e=Date.now();return e-f<5e3||e-g<5e3}async function l(e,n=0){if(v()&&n<3){console.log(`[GreenBreathe] Retry attempt ${n+1}/3 after 30s`),setTimeout(()=>l(e,n+1),3e4);return}if(y()&&n===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>l(e,n),1e4);return}const a=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",i=await w(e,a);let o=document.getElementById("green-breathe-notification-root");o||(o=x()),o.innerHTML="",o.appendChild(i),setTimeout(()=>{const r=i.shadowRoot?.querySelector(".notification-card");r&&r.classList.add("show")},100),setTimeout(()=>{m(i)},8e3)}async function w(e,n){const t=document.createElement("div");t.className=`green-breathe-notification ${n}`;const a=t.attachShadow({mode:"open"}),o=(await chrome.storage.local.get("userProfile")).userProfile?.mbtiType||"INFP",r=o.includes("T"),c=o.includes("N");let s="";r?s=e.instruction.mbtiAdaptation.T:c?s=e.instruction.mbtiAdaptation.N:s=e.instruction.mbtiAdaptation.F;const d=["了解啦","谢谢关心","OK","收到","这就去"],h=d[Math.floor(Math.random()*d.length)],u=["images/glass-plant-1.png","images/glass-plant-2.png","images/ink-wash-mountain.png"],b=u[Math.floor(Math.random()*u.length)];return a.innerHTML=`
     <style>
       * {
         margin: 0;
@@ -6,72 +6,74 @@ function h(){const e=document.createElement("div");return e.id="green-breathe-no
         box-sizing: border-box;
       }
       
-      /* 🎨 整体卡片：清晰的风景画 */
+      /* 🎨 整体卡片：留白美学 + 阴影 */
       .notification-card {
-        width: 420px;
-        min-height: 240px;
-        border-radius: 20px;
+        width: 400px;
+        background: #ffffff;
+        border-radius: 16px;
         box-shadow: 
-          0 20px 40px rgba(0, 0, 0, 0.2),
-          0 0 0 1px rgba(255, 255, 255, 0.1);
-        font-family: 'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif;
+          0 12px 32px rgba(0, 0, 0, 0.08),
+          0 2px 8px rgba(0, 0, 0, 0.04);
+        font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
         opacity: 0;
-        transform: scale(0.95);
-        transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+        transform: translateY(10px);
+        transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* 内容靠下对齐，留出上方风景 */
-        
-        /* 清晰的翠绿风景背景 */
-        background-image: url('${chrome.runtime.getURL("images/glass-plant-1.png")}');
-        background-size: cover;
-        background-position: center;
       }
       
       .notification-card.show {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
       }
       
-      /* 🎨 文本框区域：毛玻璃质感 */
+      /* 🎨 顶部风景画：清晰、不铺满、有留白 */
+      .image-container {
+        width: 100%;
+        height: 140px;
+        padding: 16px 16px 0 16px; /* 左右上留白 */
+        background: #ffffff;
+      }
+      
+      .scenery-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        background-image: url('${chrome.runtime.getURL(b)}');
+        background-size: cover;
+        background-position: center;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+      }
+      
+      /* 🎨 底部文本区域：干净、清晰的排版 */
       .content-box {
         position: relative;
-        z-index: 1;
         width: 100%;
-        padding: 32px;
-        
-        /* 毛玻璃效果 */
-        background: rgba(15, 40, 20, 0.35); /* 深翠绿半透明底色 */
-        backdrop-filter: blur(16px) saturate(120%);
-        -webkit-backdrop-filter: blur(16px) saturate(120%);
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
-        
+        padding: 24px;
+        background: #ffffff;
         display: flex;
         flex-direction: column;
       }
       
       .encouragement {
-        font-size: 24px;
-        line-height: 1.5;
-        margin-bottom: 16px;
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 12px;
         font-weight: 600;
-        letter-spacing: 2px;
-        color: #ffffff;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        color: #2c3e2c; /* 深翠绿色文字 */
+        letter-spacing: 0.5px;
       }
       
       .instruction {
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 15px;
+        color: #5c7a5c; /* 柔和的绿色 */
+        font-size: 14px;
         margin-bottom: 24px;
-        letter-spacing: 1.5px;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
-        font-weight: 300;
+        line-height: 1.5;
+        font-weight: 400;
       }
       
       .actions {
@@ -80,38 +82,38 @@ function h(){const e=document.createElement("div");return e.id="green-breathe-no
       }
       
       .action-btn {
-        padding: 8px 28px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 100px;
-        color: #fff;
-        font-size: 14px;
-        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
+        padding: 8px 24px;
+        background: #f0f7f0; /* 极淡的绿色背景 */
+        border: 1px solid #d0e5d0;
+        border-radius: 8px;
+        color: #3a5a3a;
+        font-size: 13px;
+        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         cursor: pointer;
-        transition: all 0.4s ease;
-        letter-spacing: 2px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        font-weight: 500;
       }
       
       .action-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.8);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.3);
+        background: #e2f0e2;
+        border-color: #b8d8b8;
+        transform: translateY(-1px);
       }
     </style>
     
     <div class="notification-card">
+      <div class="image-container">
+        <div class="scenery-image"></div>
+      </div>
       <div class="content-box">
         <div class="encouragement">${e.encouragement}</div>
         <div class="instruction">${e.instruction.instruction} · ${s}</div>
         <div class="actions">
-          <button class="action-btn action-dismiss">${m}</button>
+          <button class="action-btn action-dismiss">${h}</button>
         </div>
       </div>
     </div>
-  `,a.querySelector(".action-dismiss")?.addEventListener("click",()=>{v("dismissed",e.taskType),p(t)}),t}function p(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.opacity="0",t.style.filter="blur(10px)",t.style.transform="scale(0.95)"),setTimeout(()=>{e.remove()},2e3)}async function v(e,n){try{const t={timestamp:Date.now(),action:e,taskType:n},i=(await chrome.storage.local.get("interactionLog")).interactionLog||[];i.push(t),i.length>100&&i.splice(0,i.length-100),await chrome.storage.local.set({interactionLog:i})}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,n,t)=>{e.type==="SHOW_NOTIFICATION"&&(l(e.data),t({success:!0}))});const g=document.createElement("style");g.textContent=`
+  `,a.querySelector(".action-dismiss")?.addEventListener("click",()=>{T("dismissed",e.taskType),m(t)}),t}function m(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.opacity="0",t.style.filter="blur(10px)",t.style.transform="scale(0.95)"),setTimeout(()=>{e.remove()},2e3)}async function T(e,n){try{const t={timestamp:Date.now(),action:e,taskType:n},i=(await chrome.storage.local.get("interactionLog")).interactionLog||[];i.push(t),i.length>100&&i.splice(0,i.length-100),await chrome.storage.local.set({interactionLog:i})}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,n,t)=>{e.type==="SHOW_NOTIFICATION"&&(l(e.data),t({success:!0}))});const p=document.createElement("style");p.textContent=`
   #green-breathe-notification-root {
     position: fixed;
     top: 0;
@@ -146,4 +148,4 @@ function h(){const e=document.createElement("div");return e.id="green-breathe-no
     bottom: 32px;
     left: 32px;
   }
-`;document.head.appendChild(g);console.log("GreenBreathe Content Script Loaded");
+`;document.head.appendChild(p);console.log("GreenBreathe Content Script Loaded");
