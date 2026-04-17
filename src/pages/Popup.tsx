@@ -23,7 +23,7 @@ function PopupPage() {
     const profileData = await storage.getUserProfile();
     setProfile(profileData);
 
-    const logs = await storage.getInteractionLogs();
+    const logs = await storage.getInteractionLog();
     const completedLogs = logs.filter(log => log.action === 'completed');
     
     const now = Date.now();
@@ -112,7 +112,10 @@ function PopupPage() {
 
         <div className="text-center pt-2">
           <p className="text-xs text-muted-foreground">
-            MBTI: {profile.mbtiType} · 间隔: {profile.customInterval}分钟
+            MBTI: {profile.mbtiType}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            💧 {profile.hydrationInterval}分 · 👁️ {profile.eyeCareInterval}分 · 🏃 {profile.movementInterval}分
           </p>
         </div>
       </div>

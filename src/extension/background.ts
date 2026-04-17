@@ -4,7 +4,12 @@ import { NotificationData, TaskType } from '@/types/extension';
 import { getEncouragementMessage } from '@/data/mbtiMessages';
 import { getRandomInstruction } from '@/data/scientificInstructions';
 
-const ALARM_NAME = 'greenBreatheReminder';
+// 三个独立的 alarm 名称
+const ALARM_NAMES = {
+  HYDRATION: 'greenBreathe_hydration',
+  EYE_CARE: 'greenBreathe_eyeCare',
+  MOVEMENT: 'greenBreathe_movement',
+} as const;
 
 // Initialize extension
 chrome.runtime.onInstalled.addListener(async () => {
@@ -14,36 +19,79 @@ chrome.runtime.onInstalled.addListener(async () => {
   const profile = await storage.getUserProfile();
   await storage.setUserProfile(profile);
   
-  // Create initial alarm
-  await setupAlarm();
+  // Create initial alarms
+  await setupAlarms();
 });
 
-// Setup alarm based on user settings
-async function setupAlarm() {
+// Setup three independent alarms based on user settings
+async function setupAlarms() {
   const profile = await storage.getUserProfile();
   
-  // Clear existing alarm
-  await chrome.alarms.clear(ALARM_NAME);
+  // Clear all existing alarms
+  await chrome.alarms.clearAll();
   
-  if (!profile.minimalMode) {
-    // Create periodic alarm
-    chrome.alarms.create(ALARM_NAME, {
-      delayInMinutes: profile.customInterval,
-      periodInMinutes: profile.customInterval,
+  if (profile.minimalMode) {
+    console.log('Minimal mode enabled - no alarms created');
+    return;
+  }
+  
+  // 喝水提醒 alarm
+  if (profile.hydrationInterval > 0) {
+    chrome.alarms.create(ALARM_NAMES.HYDRATION, {
+      delayInMinutes: profile.hydrationInterval,
+      periodInMinutes: profile.hydrationInterval,
     });
-    console.log(`Alarm set for every ${profile.customInterval} minutes`);
+    console.log(`💧 Hydration alarm set: every ${profile.hydrationInterval} minutes`);
+  }
+  
+  // 眼睛休息 alarm
+  if (profile.eyeCareInterval > 0) {
+    chrome.alarms.create(ALARM_NAMES.EYE_CARE, {
+      delayInMinutes: profile.eyeCareInterval,
+      periodInMinutes: profile.eyeCareInterval,
+    });
+    console.log(`👁️ Eye care alarm set: every ${profile.eyeCareInterval} minutes`);
+  }
+  
+  // 身体活动 alarm
+  if (profile.movementInterval > 0) {
+    chrome.alarms.create(ALARM_NAMES.MOVEMENT, {
+      delayInMinutes: profile.movementInterval,
+      periodInMinutes: profile.movementInterval,
+    });
+    console.log(`🏃 Movement alarm set: every ${profile.movementInterval} minutes`);
   }
 }
 
-// Listen for alarm
+// Listen for alarms
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === ALARM_NAME) {
-    await triggerNotification();
+  let taskType: TaskType | null = null;
+  
+  switch (alarm.name) {
+    case ALARM_NAMES.HYDRATION:
+      taskType = 'hydration';
+      console.log('💧 Hydration alarm triggered');
+      break;
+    case ALARM_NAMES.EYE_CARE:
+      taskType = 'eyeCare';
+      console.log('👁️ Eye care alarm triggered');
+      break;
+    case ALARM_NAMES.MOVEMENT:
+      taskType = 'movement';
+      console.log('🏃 Movement alarm triggered');
+      break;
+    default:
+      console.warn('Unknown alarm:', alarm.name);
+      return;
+  }
+  
+  if (taskType) {
+    await triggerNotification(taskType);
   }
 });
 
-// Trigger notification
-async function triggerNotification() {
+// Trigger notification for specific task type
+async function triggerNotification(taskType: TaskType) {
   const profile = await storage.getUserProfile();
   
   // Check quiet hours
@@ -51,10 +99,6 @@ async function triggerNotification() {
     console.log('Quiet hours - skipping notification');
     return;
   }
-  
-  // Random task type
-  const taskTypes: TaskType[] = ['hydration', 'eyeCare', 'movement'];
-  const taskType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
   
   // Get messages
   const encouragement = getEncouragementMessage(profile.mbtiType, taskType);
@@ -112,14 +156,17 @@ function isQuietHours(quietHours: string[]): boolean {
 // Listen for messages from popup/options/content
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'UPDATE_ALARM') {
-    setupAlarm().then(() => {
+    setupAlarms().then(() => {
       sendResponse({ success: true });
     });
     return true;
   }
   
   if (message.type === 'TRIGGER_TEST_NOTIFICATION') {
-    triggerNotification().then(() => {
+    // For test, randomly pick a task type
+    const taskTypes: TaskType[] = ['hydration', 'eyeCare', 'movement'];
+    const randomTask = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+    triggerNotification(randomTask).then(() => {
       sendResponse({ success: true });
     });
     return true;
