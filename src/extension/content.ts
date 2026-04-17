@@ -147,31 +147,30 @@ async function createNotificationUI(
   position: string
 ): Promise<HTMLDivElement> {
   const wrapper = document.createElement('div');
-  wrapper.className = `green-breathe-notification ${position}`;
+  wrapper.className = `green-breathe-notification center`;
   
   // Create Shadow DOM for style isolation
   const shadowRoot = wrapper.attachShadow({ mode: 'open' });
   
   // Get user profile
   const result = await chrome.storage.local.get('userProfile');
-  const nickname = result.userProfile?.nickname || '朋友';
   const mbtiType = result.userProfile?.mbtiType || 'INFP';
   
-  // Generate adapted instruction text
-  const adaptedText = getAdaptedText(data, mbtiType);
+  // Generate adapted instruction text (without source)
+  const isThinker = mbtiType.includes('T');
+  const isIntuitive = mbtiType.includes('N');
+  let scienceText = '';
+  if (isThinker) {
+    scienceText = data.instruction.mbtiAdaptation.T;
+  } else if (isIntuitive) {
+    scienceText = data.instruction.mbtiAdaptation.N;
+  } else {
+    scienceText = data.instruction.mbtiAdaptation.F;
+  }
   
   // Random action button text
-  const actionTexts = ['了解啦~', '知道啦', '谢谢提醒', 'OK'];
+  const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
-  
-  // Get task icon
-  const taskIcon = getTaskIcon(data.taskType);
-  
-  // Current time
-  const currentTime = new Date().toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
   
   // Create HTML
   shadowRoot.innerHTML = `
@@ -184,298 +183,124 @@ async function createNotificationUI(
       
       /* 🎨 水墨审美：毛玻璃 + 晕染效果 */
       .notification-card {
-        width: 260px;
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(12px) saturate(180%);
-        -webkit-backdrop-filter: blur(12px) saturate(180%);
-        border-radius: 16px;
-        padding: 18px;
+        width: 800px;
+        max-width: 90vw;
+        min-height: 400px;
+        background: rgba(255, 255, 255, 0.35);
+        backdrop-filter: blur(30px) saturate(120%);
+        -webkit-backdrop-filter: blur(30px) saturate(120%);
+        border-radius: 24px;
+        padding: 80px 60px;
         box-shadow: 
-          0 8px 32px rgba(100, 180, 100, 0.12),
-          0 2px 8px rgba(100, 180, 100, 0.08);
-        border: 1px solid rgba(100, 180, 100, 0.2);
-        font-family: 'Source Han Serif CN', 'Noto Serif SC', Georgia, serif;
+          0 20px 60px rgba(0, 0, 0, 0.05),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+        font-family: 'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif;
         opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        filter: blur(20px);
+        transform: scale(0.95);
+        transition: all 2s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
-        pointer-events: auto;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
       }
       
       .notification-card.show {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        filter: blur(0);
+        transform: scale(1);
       }
       
-      /* 🎨 水墨晕染背景 - 三层叠加 */
+      /* 🎨 水墨风景画背景 */
       .ink-wash-bg {
         position: absolute;
-        top: -30px;
-        left: -30px;
-        right: -30px;
-        bottom: -30px;
-        background-image: url('${chrome.runtime.getURL('images/ink-wash.png')}');
-        background-size: 120%;
+        inset: 0;
+        background-image: url('${chrome.runtime.getURL('images/ink-wash-mountain.png')}');
+        background-size: cover;
         background-position: center;
-        opacity: 0;
+        opacity: 0.15;
+        mix-blend-mode: multiply;
         pointer-events: none;
         z-index: 0;
-        animation: inkSpread 0.8s ease-out forwards;
-      }
-      
-      @keyframes inkSpread {
-        0% {
-          opacity: 0;
-          transform: scale(0.8);
-        }
-        50% {
-          opacity: 0.06;
-        }
-        100% {
-          opacity: 0.12;
-          transform: scale(1);
-        }
-      }
-      
-      /* 🌱 植物成长动画容器 */
-      .plant-growth {
-        position: absolute;
-        bottom: 16px;
-        right: 16px;
-        width: 32px;
-        height: 32px;
-        opacity: 0.6;
-        pointer-events: none;
-        z-index: 2;
-      }
-      
-      .plant-svg {
-        width: 100%;
-        height: 100%;
-      }
-      
-      .plant-path {
-        stroke: #64b464;
-        stroke-width: 2;
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        stroke-dasharray: 100;
-        stroke-dashoffset: 100;
-        animation: plantGrow 2s ease-out forwards;
-      }
-      
-      @keyframes plantGrow {
-        to {
-          stroke-dashoffset: 0;
-        }
       }
       
       .content {
         position: relative;
         z-index: 1;
-      }
-      
-      .header {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        margin-bottom: 12px;
-        color: #64b464;
-        font-size: 12px;
-      }
-      
-      .title {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      
-      .plant-icon {
-        font-size: 16px;
-      }
-      
-      .time {
-        opacity: 0.6;
+        width: 100%;
       }
       
       .encouragement {
-        color: #2d5a2d;
-        font-size: 14px;
+        color: #1a2f1a;
+        font-size: 36px;
         line-height: 1.6;
-        margin-bottom: 12px;
-        font-weight: 500;
-      }
-      
-      .instruction-box {
-        background: rgba(100, 180, 100, 0.08);
-        border-left: 3px solid #64b464;
-        padding: 10px;
-        margin-bottom: 12px;
-        border-radius: 4px;
+        margin-bottom: 30px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-shadow: 0 2px 15px rgba(255,255,255,0.9);
       }
       
       .instruction {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #2d5a2d;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
-      
-      .task-icon {
-        font-size: 16px;
-      }
-      
-      .science {
-        font-size: 11px;
-        color: #5a7a5a;
-        line-height: 1.4;
-        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
-      }
-      
-      .source {
-        font-size: 10px;
-        color: #8a9a8a;
-        margin-top: 2px;
+        color: #3a5f3a;
+        font-size: 22px;
+        margin-bottom: 50px;
+        opacity: 0.85;
+        letter-spacing: 2px;
       }
       
       .actions {
-        display: flex;
-        gap: 8px;
         pointer-events: auto;
       }
       
-      button {
-        flex: 1;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 6px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
-      }
-      
-      .btn-primary {
-        background: rgba(100, 180, 100, 0.15);
-        color: #2d5a2d;
-        border: 1px solid rgba(100, 180, 100, 0.3);
-      }
-      
-      .btn-primary:hover {
-        background: rgba(100, 180, 100, 0.25);
-        transform: translateY(-1px);
-      }
-      
-      .btn-secondary {
-        background: rgba(100, 180, 100, 0.8);
-        color: white;
-        font-weight: 500;
-      }
-      
-      .btn-secondary:hover {
-        background: rgba(100, 180, 100, 1);
-        transform: translateY(-1px);
-      }
-      
-      .btn-tertiary {
+      .action-btn {
+        padding: 14px 48px;
         background: transparent;
-        color: #5a7a5a;
-        border: 1px solid rgba(100, 180, 100, 0.2);
+        border: 1px solid rgba(26, 47, 26, 0.3);
+        border-radius: 100px;
+        color: #1a2f1a;
+        font-size: 20px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.5s ease;
+        letter-spacing: 2px;
       }
       
-      .btn-tertiary:hover {
-        background: rgba(100, 180, 100, 0.1);
+      .action-btn:hover {
+        background: rgba(26, 47, 26, 0.08);
+        border-color: rgba(26, 47, 26, 0.6);
+        transform: translateY(-2px);
       }
     </style>
     
     <div class="notification-card">
       <div class="ink-wash-bg"></div>
       <div class="content">
-        <div class="header">
-          <div class="title">
-            <span class="plant-icon">🌿</span>
-            <span>青植关怀 · ${mbtiType}</span>
-          </div>
-          <div class="time">${currentTime}</div>
-        </div>
-        
         <div class="encouragement">${data.encouragement}</div>
-        
-        <div class="instruction-box">
-          <div class="instruction">
-            <span class="task-icon">${taskIcon}</span>
-            <span>${data.instruction.instruction}</span>
-          </div>
-          <div class="science">
-            ${adaptedText}
-          </div>
-          <div class="source">(${data.instruction.source})</div>
-        </div>
-        
+        <div class="instruction">${data.instruction.instruction} · ${scienceText}</div>
         <div class="actions">
-          <button class="btn-primary action-dismiss">${randomAction}</button>
-          <button class="btn-secondary action-complete">已完成 ✓</button>
-          <button class="btn-tertiary action-snooze">稍后</button>
+          <button class="action-btn action-dismiss">${randomAction}</button>
         </div>
       </div>
     </div>
   `;
   
   // Add event listeners
-  const card = shadowRoot.querySelector('.notification-card') as HTMLElement;
   const dismissBtn = shadowRoot.querySelector('.action-dismiss') as HTMLButtonElement;
-  const completeBtn = shadowRoot.querySelector('.action-complete') as HTMLButtonElement;
-  const snoozeBtn = shadowRoot.querySelector('.action-snooze') as HTMLButtonElement;
   
   dismissBtn?.addEventListener('click', () => {
     logInteraction('dismissed', data.taskType);
     dismissNotification(wrapper);
   });
   
-  completeBtn?.addEventListener('click', () => {
-    logInteraction('completed', data.taskType);
-    dismissNotification(wrapper);
-  });
-  
-  snoozeBtn?.addEventListener('click', () => {
-    logInteraction('snoozed', data.taskType);
-    dismissNotification(wrapper);
-  });
-  
   return wrapper;
-}
-
-// Get task icon
-function getTaskIcon(taskType: string): string {
-  switch (taskType) {
-    case 'hydration': return '💧';
-    case 'eyeCare': return '👁️';
-    case 'movement': return '🏃';
-    default: return '🌿';
-  }
-}
-
-// Get MBTI adapted text
-function getAdaptedText(data: NotificationData, mbtiType: string): string {
-  const isThinker = mbtiType.includes('T');
-  const isIntuitive = mbtiType.includes('N');
-  
-  let text = '';
-  if (isThinker) {
-    text = data.instruction.mbtiAdaptation.T;
-  } else if (isIntuitive) {
-    text = data.instruction.mbtiAdaptation.N;
-  } else {
-    text = data.instruction.mbtiAdaptation.F;
-  }
-  
-  return `${text} <br/><small>↑ ${data.instruction.scienceBasis}</small>`;
 }
 
 // Dismiss notification with animation
@@ -485,12 +310,13 @@ function dismissNotification(element: HTMLElement) {
   
   if (card) {
     card.style.opacity = '0';
-    card.style.transform = 'translateY(-20px)';
+    card.style.filter = 'blur(10px)';
+    card.style.transform = 'scale(0.95)';
   }
   
   setTimeout(() => {
     element.remove();
-  }, 800);
+  }, 2000);
 }
 
 // Log interaction
@@ -550,31 +376,14 @@ style.textContent = `
     height: 100%;
     z-index: 2147483647;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   #green-breathe-notification-root .green-breathe-notification {
-    position: absolute;
-    pointer-events: auto;
-  }
-  
-  #green-breathe-notification-root .top_right {
-    top: 20px;
-    right: 20px;
-  }
-  
-  #green-breathe-notification-root .top_left {
-    top: 20px;
-    left: 20px;
-  }
-  
-  #green-breathe-notification-root .bottom_right {
-    bottom: 20px;
-    right: 20px;
-  }
-  
-  #green-breathe-notification-root .bottom_left {
-    bottom: 20px;
-    left: 20px;
+    position: relative;
+    pointer-events: none;
   }
 `;
 document.head.appendChild(style);
