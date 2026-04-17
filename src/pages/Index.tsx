@@ -96,88 +96,97 @@ function NotificationCard({
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
+        top: 32,
+        right: 32,
         zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         pointerEvents: 'none',
       }}
     >
       <div
         style={{
-          width: 800,
-          maxWidth: '90vw',
-          minHeight: 400,
-          background: 'rgba(255, 255, 255, 0.35)',
-          backdropFilter: 'blur(30px) saturate(120%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(120%)',
-          borderRadius: 24,
-          padding: '80px 60px',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.4)',
+          width: 420,
+          minHeight: 240,
+          background: 'rgba(15, 40, 20, 0.45)',
+          backdropFilter: 'blur(24px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+          borderRadius: 20,
+          padding: '40px 32px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 20px rgba(100, 200, 100, 0.05)',
+          border: '1px solid rgba(150, 220, 150, 0.15)',
           fontFamily: "'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif",
           transform: visible ? 'scale(1)' : 'scale(0.95)',
           opacity: visible ? 1 : 0,
-          filter: visible ? 'blur(0)' : 'blur(20px)',
-          transition: 'all 2s cubic-bezier(0.22, 1, 0.36, 1)',
+          filter: visible ? 'blur(0)' : 'blur(10px)',
+          transition: 'all 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          textAlign: 'center',
         }}
       >
-        {/* 水墨风景画背景 */}
+        {/* 森林风景画背景 */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          backgroundImage: "url('/images/ink-wash-mountain.png')",
+          backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.15,
-          mixBlendMode: 'multiply',
+          opacity: 0.25,
+          mixBlendMode: 'overlay',
         }} />
 
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-          {/* 鼓励语 */}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+          {/* 鼓励语 - 文字透出背景效果 */}
           <p style={{ 
-            fontSize: 36, color: '#1a2f1a', lineHeight: 1.6, marginBottom: 30, 
-            fontWeight: 600, letterSpacing: 3, textShadow: '0 2px 15px rgba(255,255,255,0.9)' 
+            fontSize: 26, lineHeight: 1.5, marginBottom: 24, 
+            fontWeight: 600, letterSpacing: 2,
+            backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            color: 'transparent',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))',
           }}>
             {message}
           </p>
 
           {/* 指令框 */}
           <p style={{ 
-            fontSize: 22, color: '#3a5f3a', marginBottom: 50, 
-            opacity: 0.85, letterSpacing: 2 
+            fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', marginBottom: 32, 
+            letterSpacing: 1.5, textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+            fontFamily: "'Source Han Sans CN', 'Noto Sans SC', sans-serif",
+            fontWeight: 300,
           }}>
             {task.instruction}
           </p>
 
           {/* 操作按钮 */}
-          <div style={{ pointerEvents: 'auto' }}>
+          <div style={{ pointerEvents: 'auto', alignSelf: 'flex-end' }}>
             <button 
               onClick={onDismiss} 
               style={{
-                padding: '14px 48px', background: 'transparent', border: '1px solid rgba(26, 47, 26, 0.3)',
-                borderRadius: 100, fontSize: 20, cursor: 'pointer', color: '#1a2f1a',
-                fontFamily: 'inherit', letterSpacing: 2, transition: 'all 0.5s ease',
+                padding: '10px 32px', background: 'rgba(255, 255, 255, 0.1)', 
+                backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: 100, fontSize: 15, cursor: 'pointer', color: '#fff',
+                fontFamily: "'Source Han Sans CN', 'Noto Sans SC', sans-serif", 
+                letterSpacing: 2, transition: 'all 0.4s ease',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(26, 47, 26, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(26, 47, 26, 0.6)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.6)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(26, 47, 26, 0.3)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
               }}
             >
               {randomAction}
@@ -228,7 +237,7 @@ export default function Index() {
       <div style={{ 
         width: 1280, 
         height: 720, 
-        background: 'url(/images/ink-wash-mountain.png) center/cover',
+        background: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png') center/cover",
         position: 'relative',
         boxShadow: '0 30px 80px rgba(0,0,0,0.1)',
         borderRadius: 24,
@@ -239,31 +248,41 @@ export default function Index() {
         justifyContent: 'center',
       }}>
         {/* 遮罩层让背景变淡 */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(247, 245, 240, 0.85)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(15, 40, 20, 0.65)', backdropFilter: 'blur(8px)' }} />
 
         <div style={{ position: 'relative', zIndex: 1, width: 800, textAlign: 'center' }}>
           {/* 标题 */}
           <div style={{ marginBottom: 60 }}>
-            <h1 style={{ fontSize: 48, fontWeight: 600, color: '#1a2f1a', margin: '0 0 16px', letterSpacing: 4 }}>
+            <h1 style={{ 
+              fontSize: 48, fontWeight: 600, margin: '0 0 16px', letterSpacing: 4,
+              backgroundImage: "url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed',
+              color: 'transparent',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))',
+            }}>
               青植呼吸
             </h1>
-            <p style={{ fontSize: 20, color: '#3a5f3a', margin: 0, letterSpacing: 2, opacity: 0.8 }}>
-              基于MBTI的极简健康提醒 · 沉浸式水墨体验
+            <p style={{ fontSize: 20, color: 'rgba(255, 255, 255, 0.8)', margin: 0, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              基于MBTI的极简健康提醒 · 沉浸式森林体验
             </p>
           </div>
 
           {/* 演示控制台 */}
           <div style={{
-            background: 'rgba(255,255,255,0.4)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.5)',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(24px) saturate(150%)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: 24,
             padding: 40,
-            boxShadow: '0 10px 40px rgba(0,0,0,0.03)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
           }}>
             <div style={{ display: 'flex', gap: 40, marginBottom: 40 }}>
               <div style={{ flex: 1 }}>
-                <h2 style={{ fontSize: 18, color: '#1a2f1a', marginBottom: 20, fontWeight: 600, letterSpacing: 2 }}>选择提醒类型</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>选择提醒类型</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {(Object.keys(TASK_INFO) as TaskType[]).map(t => {
                     const task = TASK_INFO[t];
@@ -275,14 +294,15 @@ export default function Index() {
                         style={{
                           padding: '12px 20px',
                           borderRadius: 12,
-                          border: active ? '1px solid rgba(26, 47, 26, 0.4)' : '1px solid transparent',
-                          background: active ? 'rgba(26, 47, 26, 0.05)' : 'transparent',
+                          border: active ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
+                          background: active ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
                           cursor: 'pointer',
                           transition: 'all 0.3s',
                           fontSize: 16,
-                          color: active ? '#1a2f1a' : '#5a7a5a',
+                          color: active ? '#fff' : 'rgba(255, 255, 255, 0.7)',
                           fontFamily: 'inherit',
                           letterSpacing: 2,
+                          textShadow: active ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                         }}
                       >
                         {task.label}
@@ -292,10 +312,10 @@ export default function Index() {
                 </div>
               </div>
 
-              <div style={{ width: 1, background: 'rgba(26, 47, 26, 0.1)' }} />
+              <div style={{ width: 1, background: 'rgba(255, 255, 255, 0.2)' }} />
 
               <div style={{ flex: 2 }}>
-                <h2 style={{ fontSize: 18, color: '#1a2f1a', marginBottom: 20, fontWeight: 600, letterSpacing: 2 }}>选择 MBTI</h2>
+                <h2 style={{ fontSize: 18, color: '#fff', marginBottom: 20, fontWeight: 600, letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>选择 MBTI</h2>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {MBTI_LIST.map(m => (
                     <button
@@ -303,11 +323,12 @@ export default function Index() {
                       onClick={() => setSelectedMbti(m)}
                       style={{
                         padding: '10px 24px', borderRadius: 100,
-                        border: selectedMbti === m ? '1px solid rgba(26, 47, 26, 0.4)' : '1px solid rgba(26, 47, 26, 0.1)',
-                        background: selectedMbti === m ? 'rgba(26, 47, 26, 0.05)' : 'transparent',
-                        color: selectedMbti === m ? '#1a2f1a' : '#5a7a5a',
+                        border: selectedMbti === m ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        background: selectedMbti === m ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        color: selectedMbti === m ? '#fff' : 'rgba(255, 255, 255, 0.7)',
                         fontSize: 16, fontFamily: 'inherit', letterSpacing: 1,
                         cursor: 'pointer', transition: 'all 0.3s',
+                        textShadow: selectedMbti === m ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                       }}
                     >
                       {m}
@@ -321,23 +342,27 @@ export default function Index() {
               onClick={triggerNotification}
               style={{
                 width: '100%', height: 60,
-                background: 'transparent',
-                border: '1px solid rgba(26, 47, 26, 0.4)',
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: 100, fontSize: 20,
-                color: '#1a2f1a', cursor: 'pointer',
+                color: '#fff', cursor: 'pointer',
                 fontFamily: 'inherit', letterSpacing: 4,
                 transition: 'all 0.5s',
+                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(26, 47, 26, 0.05)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
               }}
             >
-              触发水墨提醒
+              触发森林提醒
             </Button>
           </div>
         </div>

@@ -147,7 +147,7 @@ async function createNotificationUI(
   position: string
 ): Promise<HTMLDivElement> {
   const wrapper = document.createElement('div');
-  wrapper.className = `green-breathe-notification center`;
+  wrapper.className = `green-breathe-notification ${position}`;
   
   // Create Shadow DOM for style isolation
   const shadowRoot = wrapper.attachShadow({ mode: 'open' });
@@ -181,33 +181,33 @@ async function createNotificationUI(
         box-sizing: border-box;
       }
       
-      /* 🎨 水墨审美：毛玻璃 + 晕染效果 */
+      /* 🎨 翠绿森林毛玻璃美学 */
       .notification-card {
-        width: 800px;
-        max-width: 90vw;
-        min-height: 400px;
-        background: rgba(255, 255, 255, 0.35);
-        backdrop-filter: blur(30px) saturate(120%);
-        -webkit-backdrop-filter: blur(30px) saturate(120%);
-        border-radius: 24px;
-        padding: 80px 60px;
+        width: 420px;
+        min-height: 240px;
+        background: rgba(15, 40, 20, 0.45); /* 深翠绿半透明底色 */
+        backdrop-filter: blur(24px) saturate(150%);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        border-radius: 20px;
+        padding: 40px 32px;
         box-shadow: 
-          0 20px 60px rgba(0, 0, 0, 0.05),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+          0 20px 40px rgba(0, 0, 0, 0.2),
+          inset 0 1px 1px rgba(255, 255, 255, 0.15),
+          inset 0 0 20px rgba(100, 200, 100, 0.05);
+        border: 1px solid rgba(150, 220, 150, 0.15);
         font-family: 'STKaiti', 'KaiTi', '楷体', 'Source Han Serif CN', 'Noto Serif SC', serif;
         opacity: 0;
-        filter: blur(20px);
+        filter: blur(10px);
         transform: scale(0.95);
-        transition: all 2s cubic-bezier(0.22, 1, 0.36, 1);
+        transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         overflow: hidden;
         /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
-        text-align: center;
       }
       
       .notification-card.show {
@@ -216,15 +216,15 @@ async function createNotificationUI(
         transform: scale(1);
       }
       
-      /* 🎨 水墨风景画背景 */
-      .ink-wash-bg {
+      /* 🎨 森林风景画背景 (叠加在毛玻璃底层) */
+      .forest-bg {
         position: absolute;
         inset: 0;
-        background-image: url('${chrome.runtime.getURL('images/ink-wash-mountain.png')}');
+        background-image: url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png');
         background-size: cover;
         background-position: center;
-        opacity: 0.15;
-        mix-blend-mode: multiply;
+        opacity: 0.25;
+        mix-blend-mode: overlay;
         pointer-events: none;
         z-index: 0;
       }
@@ -234,54 +234,70 @@ async function createNotificationUI(
         z-index: 1;
         display: flex;
         flex-direction: column;
-        align-items: center;
         width: 100%;
       }
       
+      /* 🌟 文字透出背景效果 (Text Clip) */
       .encouragement {
-        color: #1a2f1a;
-        font-size: 36px;
-        line-height: 1.6;
-        margin-bottom: 30px;
+        font-size: 26px;
+        line-height: 1.5;
+        margin-bottom: 24px;
         font-weight: 600;
-        letter-spacing: 3px;
-        text-shadow: 0 2px 15px rgba(255,255,255,0.9);
+        letter-spacing: 2px;
+        
+        /* 核心：文字透明，透出背景图 */
+        background-image: url('https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/9c20.png');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+        
+        /* 柔和的发光背景，确保在任何底色上都清晰 */
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
       }
       
       .instruction {
-        color: #3a5f3a;
-        font-size: 22px;
-        margin-bottom: 50px;
-        opacity: 0.85;
-        letter-spacing: 2px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        margin-bottom: 32px;
+        letter-spacing: 1.5px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
+        font-weight: 300;
       }
       
       .actions {
         pointer-events: auto;
+        align-self: flex-end;
       }
       
       .action-btn {
-        padding: 14px 48px;
-        background: transparent;
-        border: 1px solid rgba(26, 47, 26, 0.3);
+        padding: 10px 32px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 100px;
-        color: #1a2f1a;
-        font-size: 20px;
-        font-family: inherit;
+        color: #fff;
+        font-size: 15px;
+        font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
         cursor: pointer;
-        transition: all 0.5s ease;
+        transition: all 0.4s ease;
         letter-spacing: 2px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
       
       .action-btn:hover {
-        background: rgba(26, 47, 26, 0.08);
-        border-color: rgba(26, 47, 26, 0.6);
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.6);
         transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(150, 255, 150, 0.2);
       }
     </style>
     
     <div class="notification-card">
-      <div class="ink-wash-bg"></div>
+      <div class="forest-bg"></div>
       <div class="content">
         <div class="encouragement">${data.encouragement}</div>
         <div class="instruction">${data.instruction.instruction} · ${scienceText}</div>
@@ -376,14 +392,31 @@ style.textContent = `
     height: 100%;
     z-index: 2147483647;
     pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   
   #green-breathe-notification-root .green-breathe-notification {
-    position: relative;
+    position: absolute;
     pointer-events: none;
+  }
+  
+  #green-breathe-notification-root .top_right {
+    top: 32px;
+    right: 32px;
+  }
+  
+  #green-breathe-notification-root .top_left {
+    top: 32px;
+    left: 32px;
+  }
+  
+  #green-breathe-notification-root .bottom_right {
+    bottom: 32px;
+    right: 32px;
+  }
+  
+  #green-breathe-notification-root .bottom_left {
+    bottom: 32px;
+    left: 32px;
   }
 `;
 document.head.appendChild(style);
