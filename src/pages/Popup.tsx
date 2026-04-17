@@ -58,65 +58,73 @@ function PopupPage() {
   }
 
   return (
-    <div className="w-80 bg-gradient-to-br from-background to-muted">
-      <div className="p-6 space-y-4">
-        <div className="text-center mb-4">
-          <div className="text-4xl mb-2">🌿</div>
-          <h2 className="text-xl font-bold text-foreground">青植呼吸</h2>
-          <p className="text-sm text-muted-foreground">你好，{profile.nickname}</p>
+    <div className="w-80 bg-gradient-to-br from-background via-muted/30 to-background relative overflow-hidden min-h-[500px]">
+      {/* 装饰性背景元素 */}
+      <div className="bg-blob-1 opacity-50"></div>
+      <div className="bg-blob-2 opacity-50"></div>
+      
+      <div className="p-6 space-y-5 relative z-10">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg mb-3">
+            <span className="text-3xl text-white">🌿</span>
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">青植呼吸</h2>
+          <p className="text-base text-muted-foreground mt-1">你好，{profile.nickname}</p>
         </div>
 
-        <Card className="glass-effect border-primary/20">
-          <CardContent className="p-4 space-y-3">
+        <Card className="glass-card border-t-4 border-t-primary/50">
+          <CardContent className="p-5 space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">今日完成</span>
-              <span className="text-2xl font-bold text-primary">{stats.today}</span>
+              <span className="text-base font-medium text-muted-foreground">今日完成</span>
+              <span className="text-3xl font-bold text-primary">{stats.today}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">本周完成</span>
-              <span className="text-lg font-semibold text-foreground">{stats.week}</span>
+              <span className="text-base font-medium text-muted-foreground">本周完成</span>
+              <span className="text-xl font-semibold text-foreground">{stats.week}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">累计完成</span>
-              <span className="text-lg font-semibold text-foreground">{stats.total}</span>
+              <span className="text-base font-medium text-muted-foreground">累计完成</span>
+              <span className="text-xl font-semibold text-foreground">{stats.total}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-effect border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">植物成长</span>
-              <span className="text-xs text-muted-foreground">Lv.{growth.level}</span>
+        <Card className="glass-card border-t-4 border-t-secondary/50">
+          <CardContent className="p-5">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-base font-medium text-foreground">植物成长</span>
+              <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">Lv.{growth.level}</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-3 bg-muted/50 rounded-full overflow-hidden border border-border/50">
               <div
-                className="h-full bg-primary transition-all duration-500"
+                className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
                 style={{ width: `${((growth.totalCompletions % 10) / 10) * 100}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
+            <p className="text-sm text-muted-foreground mt-3 text-center">
               {10 - (growth.totalCompletions % 10)} 次后升级
             </p>
           </CardContent>
         </Card>
 
-        <div className="space-y-2">
-          <Button onClick={triggerTest} className="w-full bg-primary hover:bg-primary-dark">
+        <div className="space-y-3 pt-2">
+          <Button onClick={triggerTest} className="w-full glass-button h-12 text-base rounded-xl">
             立即测试提醒
           </Button>
-          <Button onClick={openOptions} variant="outline" className="w-full">
+          <Button onClick={openOptions} variant="outline" className="w-full glass-button-outline h-12 text-base rounded-xl">
             打开设置
           </Button>
         </div>
 
         <div className="text-center pt-2">
-          <p className="text-xs text-muted-foreground">
-            MBTI: {profile.mbtiType}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            💧 {profile.hydrationInterval}分 · 👁️ {profile.eyeCareInterval}分 · 🏃 {profile.movementInterval}分
-          </p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">MBTI: {profile.mbtiType}</p>
+          <div className="flex justify-center gap-3 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="text-primary">💧</span> {profile.hydrationInterval}分</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><span className="text-primary">👁️</span> {profile.eyeCareInterval}分</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><span className="text-primary">🏃</span> {profile.movementInterval}分</span>
+          </div>
         </div>
       </div>
     </div>
