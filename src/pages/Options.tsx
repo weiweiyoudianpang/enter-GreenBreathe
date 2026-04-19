@@ -62,10 +62,7 @@ const styles = {
   bgImage: {
     position: 'absolute' as const,
     inset: 0,
-    backgroundImage: "url('/images/bg-options.png')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'center top',
-    opacity: 0.15,
+    background: 'linear-gradient(135deg, rgba(10,30,46,0.95) 0%, rgba(15,42,62,0.9) 50%, rgba(10,30,46,0.98) 100%)',
   },
   overlay: {
     position: 'absolute' as const,
@@ -292,13 +289,11 @@ function OptionsPage() {
       <div style={{ position: 'absolute', bottom: -80, left: -60, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,158,222,0.06) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
       <div style={styles.container}>
-        {/* Logo */}
+        {/* Header title */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <img
-            src="/images/logo-greenbreathe.png"
-            alt="青植呼吸 GreenBreathe"
-            style={{ width: 280, margin: '0 auto 12px', display: 'block', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.4))' }}
-          />
+          <h1 style={{ fontSize: 36, fontWeight: 800, letterSpacing: 4, margin: '0 0 12px', background: 'linear-gradient(135deg, #ffffff 0%, #38c9a3 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            青植呼吸
+          </h1>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>用温柔的方式，提醒你关爱自己</p>
         </div>
 

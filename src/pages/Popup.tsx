@@ -53,7 +53,7 @@ function PopupPage() {
   if (!profile || !growth) {
     return (
       <div className="w-80 h-96 flex items-center justify-center" style={{ background: '#0a1e2e' }}>
-        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Loading...</p>
+        <p style={{ color: 'rgba(255,255,255,0.5)' }}>加载中...</p>
       </div>
     );
   }
@@ -70,26 +70,26 @@ function PopupPage() {
       <div style={{ position: 'relative', zIndex: 1, padding: '24px 20px 20px' }}>
         {/* Header: Logo + 名字 */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img src="/images/logo-greenbreathe.png" alt="GreenBreathe" style={{ width: 100, margin: '0 auto 8px', display: 'block', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }} />
+          <img src="/images/logo-greenbreathe.png" alt="青植呼吸" style={{ width: 100, margin: '0 auto 8px', display: 'block', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }} />
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-            Hello, {profile.nickname}
+            你好, {profile.nickname}
           </p>
         </div>
 
         {/* 统计卡片 */}
         <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Today</span>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>今日完成</span>
             <span style={{ fontSize: 28, fontWeight: 700, color: '#38c9a3' }}>{stats.today}</span>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
               <div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{stats.week}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>This Week</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>本周</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
               <div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{stats.total}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Total</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>累计</div>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ function PopupPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Leaf size={16} style={{ color: '#38c9a3' }} />
-              <span style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>Plant Growth</span>
+              <span style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>植物成长</span>
             </div>
             <span style={{ fontSize: 12, color: '#38c9a3', fontWeight: 600, background: 'rgba(56,201,163,0.12)', padding: '3px 10px', borderRadius: 8 }}>Lv.{growth.level}</span>
           </div>
@@ -107,7 +107,7 @@ function PopupPage() {
             <div style={{ height: '100%', width: `${progressPercent}%`, borderRadius: 3, background: 'linear-gradient(90deg, #38c9a3, #2eb391)', transition: 'width 0.5s' }} />
           </div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8 }}>
-            {remainToLevelUp} more to level up
+            {remainToLevelUp} 次后升级
           </p>
         </div>
 
@@ -119,14 +119,14 @@ function PopupPage() {
             fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif",
             boxShadow: '0 4px 16px rgba(56,201,163,0.3)', transition: 'all 0.3s',
           }}>
-            Test Notification
+            立即测试提醒
           </button>
           <button onClick={openOptions} style={{
             width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, fontWeight: 500, letterSpacing: 1, cursor: 'pointer',
             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)',
             fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", transition: 'all 0.3s',
           }}>
-            Settings
+            打开设置
           </button>
         </div>
 
@@ -134,9 +134,9 @@ function PopupPage() {
         <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 6px' }}>MBTI: {profile.mbtiType}</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Droplets size={12} style={{ color: '#3b9ede' }} /> {profile.hydrationInterval}m</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Eye size={12} style={{ color: '#7c5cbf' }} /> {profile.eyeCareInterval}m</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><PersonStanding size={12} style={{ color: '#3aaa6e' }} /> {profile.movementInterval}m</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Droplets size={12} style={{ color: '#3b9ede' }} /> {profile.hydrationInterval}分</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Eye size={12} style={{ color: '#7c5cbf' }} /> {profile.eyeCareInterval}分</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><PersonStanding size={12} style={{ color: '#3aaa6e' }} /> {profile.movementInterval}分</span>
           </div>
         </div>
       </div>

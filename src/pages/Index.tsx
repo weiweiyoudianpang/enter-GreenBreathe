@@ -138,9 +138,6 @@ export default function Index() {
         <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,158,222,0.12) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 800, padding: '0 24px' }}>
-          {/* Logo */}
-          <img src="/images/logo-greenbreathe.png" alt="GreenBreathe" style={{ width: 400, margin: '0 auto 32px', display: 'block', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.3))' }} />
-
           <h1 style={{ fontSize: 64, fontWeight: 800, margin: '0 0 20px', letterSpacing: 6, lineHeight: 1.2, background: 'linear-gradient(135deg, #ffffff 0%, #38c9a3 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             青植呼吸
           </h1>

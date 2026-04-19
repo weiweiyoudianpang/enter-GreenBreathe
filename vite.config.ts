@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   }
   
   // Chrome Extension build configuration
-  const isExtensionBuild = process.env.BUILD_TARGET === 'extension';
+  const isExtensionBuild = process.env.BUILD_TARGET === 'extension' || mode === 'extension';
   
   if (isExtensionBuild) {
     return {
@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
           input: {
             options: path.resolve(__dirname, 'options.html'),
             popup: path.resolve(__dirname, 'popup.html'),
-            notification: path.resolve(__dirname, 'public/notification.html'),
+            notification: path.resolve(__dirname, 'notification.html'),
             background: path.resolve(__dirname, 'src/extension/background.ts'),
             content: path.resolve(__dirname, 'src/extension/content.ts'),
           },
