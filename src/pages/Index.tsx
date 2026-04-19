@@ -72,7 +72,7 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
       }}>
         <div className={visible ? 'ink-wash-content' : ''} style={{
           position: 'relative', zIndex: 1, width: '100%', height: '30%', padding: '40px 60px',
-          background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(24px) saturate(120%)', WebkitBackdropFilter: 'blur(24px) saturate(120%)',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(28px) saturate(150%)', WebkitBackdropFilter: 'blur(28px) saturate(150%)',
           borderTop: '1px solid rgba(255,255,255,0.5)', display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
           <p style={{ fontSize: 32, lineHeight: 1.5, marginBottom: 16, fontWeight: 600, letterSpacing: 1, color: '#134e6f' }}>{message}</p>

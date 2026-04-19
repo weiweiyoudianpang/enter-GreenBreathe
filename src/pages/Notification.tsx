@@ -161,9 +161,9 @@ function NotificationWindow() {
             left: 0;
             right: 0;
             height: 30%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(28px) saturate(150%);
+            -webkit-backdrop-filter: blur(28px) saturate(150%);
             padding: 40px 60px;
             display: flex;
             flex-direction: column;
