@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { UserProfile, InteractionLog, PlantGrowth } from '@/types/extension';
+import { Droplets, Eye, PersonStanding, Leaf } from 'lucide-react';
 
 function PopupPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -51,80 +52,91 @@ function PopupPage() {
 
   if (!profile || !growth) {
     return (
-      <div className="w-80 h-96 flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">加载中...</p>
+      <div className="w-80 h-96 flex items-center justify-center" style={{ background: '#0a1e2e' }}>
+        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Loading...</p>
       </div>
     );
   }
 
+  const progressPercent = ((growth.totalCompletions % 10) / 10) * 100;
+  const remainToLevelUp = 10 - (growth.totalCompletions % 10);
+
   return (
-    <div className="w-80 bg-gradient-to-br from-background via-muted/30 to-background relative overflow-hidden min-h-[500px]">
-      {/* 装饰性背景元素 */}
-      <div className="bg-blob-1 opacity-50"></div>
-      <div className="bg-blob-2 opacity-50"></div>
-      
-      <div className="p-6 space-y-5 relative z-10">
-        <div className="text-center mb-6">
-          <img
-            src="/images/logo-greenbreathe.png"
-            alt="青植呼吸"
-            className="w-32 mx-auto mb-2 drop-shadow"
-          />
-          <p className="text-base text-muted-foreground mt-1">你好，{profile.nickname}</p>
+    <div className="w-80" style={{ background: '#0a1e2e', fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", position: 'relative', overflow: 'hidden' }}>
+      {/* 装饰光晕 */}
+      <div style={{ position: 'absolute', top: -80, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,201,163,0.12) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+      <div style={{ position: 'absolute', bottom: -40, left: -40, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,158,222,0.1) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+
+      <div style={{ position: 'relative', zIndex: 1, padding: '24px 20px 20px' }}>
+        {/* Header: Logo + 名字 */}
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <img src="/images/logo-greenbreathe.png" alt="GreenBreathe" style={{ width: 100, margin: '0 auto 8px', display: 'block', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }} />
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+            Hello, {profile.nickname}
+          </p>
         </div>
 
-        <Card className="glass-card border-t-4 border-t-primary/50">
-          <CardContent className="p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-base font-medium text-muted-foreground">今日完成</span>
-              <span className="text-3xl font-bold text-primary">{stats.today}</span>
+        {/* 统计卡片 */}
+        <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Today</span>
+            <span style={{ fontSize: 28, fontWeight: 700, color: '#38c9a3' }}>{stats.today}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{stats.week}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>This Week</div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-base font-medium text-muted-foreground">本周完成</span>
-              <span className="text-xl font-semibold text-foreground">{stats.week}</span>
+            <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{stats.total}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Total</div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-base font-medium text-muted-foreground">累计完成</span>
-              <span className="text-xl font-semibold text-foreground">{stats.total}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-t-4 border-t-secondary/50">
-          <CardContent className="p-5">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-base font-medium text-foreground">植物成长</span>
-              <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">Lv.{growth.level}</span>
-            </div>
-            <div className="h-3 bg-muted/50 rounded-full overflow-hidden border border-border/50">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
-                style={{ width: `${((growth.totalCompletions % 10) / 10) * 100}%` }}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground mt-3 text-center">
-              {10 - (growth.totalCompletions % 10)} 次后升级
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-3 pt-2">
-          <Button onClick={triggerTest} className="w-full glass-button h-12 text-base rounded-xl">
-            立即测试提醒
-          </Button>
-          <Button onClick={openOptions} variant="outline" className="w-full glass-button-outline h-12 text-base rounded-xl">
-            打开设置
-          </Button>
+          </div>
         </div>
 
-        <div className="text-center pt-2">
-          <p className="text-sm font-medium text-muted-foreground mb-2">MBTI: {profile.mbtiType}</p>
-          <div className="flex justify-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1"><span className="text-primary">💧</span> {profile.hydrationInterval}分</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><span className="text-primary">👁️</span> {profile.eyeCareInterval}分</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><span className="text-primary">🏃</span> {profile.movementInterval}分</span>
+        {/* 植物成长 */}
+        <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Leaf size={16} style={{ color: '#38c9a3' }} />
+              <span style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>Plant Growth</span>
+            </div>
+            <span style={{ fontSize: 12, color: '#38c9a3', fontWeight: 600, background: 'rgba(56,201,163,0.12)', padding: '3px 10px', borderRadius: 8 }}>Lv.{growth.level}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${progressPercent}%`, borderRadius: 3, background: 'linear-gradient(90deg, #38c9a3, #2eb391)', transition: 'width 0.5s' }} />
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8 }}>
+            {remainToLevelUp} more to level up
+          </p>
+        </div>
+
+        {/* 操作按钮 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          <button onClick={triggerTest} style={{
+            width: '100%', padding: '14px 0', borderRadius: 14, fontSize: 15, fontWeight: 600, letterSpacing: 2, cursor: 'pointer',
+            background: 'linear-gradient(135deg, #38c9a3, #2eb391)', border: 'none', color: '#fff',
+            fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif",
+            boxShadow: '0 4px 16px rgba(56,201,163,0.3)', transition: 'all 0.3s',
+          }}>
+            Test Notification
+          </button>
+          <button onClick={openOptions} style={{
+            width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, fontWeight: 500, letterSpacing: 1, cursor: 'pointer',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)',
+            fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif", transition: 'all 0.3s',
+          }}>
+            Settings
+          </button>
+        </div>
+
+        {/* 底部信息 */}
+        <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 6px' }}>MBTI: {profile.mbtiType}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Droplets size={12} style={{ color: '#3b9ede' }} /> {profile.hydrationInterval}m</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Eye size={12} style={{ color: '#7c5cbf' }} /> {profile.eyeCareInterval}m</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><PersonStanding size={12} style={{ color: '#3aaa6e' }} /> {profile.movementInterval}m</span>
           </div>
         </div>
       </div>
