@@ -212,7 +212,7 @@ function OptionsPage() {
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
             <Leaf size={28} style={{ color: t.accent }} />
-            <h1 style={{ fontSize: 36, fontWeight: 800, letterSpacing: 4, margin: 0, background: isDay ? `linear-gradient(135deg, ${t.text} 0%, ${t.accent} 100%)` : `linear-gradient(135deg, #ffffff 0%, ${t.accent} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 style={{ fontSize: 36, fontWeight: 800, letterSpacing: 4, margin: 0, color: t.text }}>
               青植呼吸
             </h1>
           </div>

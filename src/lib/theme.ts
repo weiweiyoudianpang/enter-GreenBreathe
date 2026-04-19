@@ -136,9 +136,8 @@ export const defaultBackgrounds = {
     'office-zen-green-cat.png',
   ],
   night: [
-    'ink-wash.png',
-    'ink-wash-mountain.png',
-    'glass-plant-1.png',
-    'glass-plant-2.png',
+    'neon-leaf.png',
+    'moonlight-forest.png',
+    'shattered-moon.jpg',
   ],
 };
