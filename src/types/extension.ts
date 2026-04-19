@@ -9,6 +9,8 @@ export type TaskType = 'hydration' | 'eyeCare' | 'movement';
 
 export type NotificationPosition = 'top_right' | 'top_left' | 'bottom_right' | 'bottom_left';
 
+export type ThemeMode = 'day' | 'night' | 'auto';
+
 export type CardSize = 'small' | 'medium' | 'large';
 
 export interface UserProfile {
@@ -22,12 +24,15 @@ export interface UserProfile {
   notificationPosition: NotificationPosition;
   minimalMode: boolean;
   cardSize?: CardSize;           // 卡片尺寸（默认 medium）
+  themeMode?: ThemeMode;         // 白天/夜间/自动模式
   // 可选扩展字段
   theme?: string;
   soundEnabled?: boolean;
   soundVolume?: number;
   customImage?: string | null;
-  customBackgrounds?: string[];  // 用户自定义背景图片（base64 data URLs）
+  customBackgrounds?: string[];  // 兼容旧版
+  customBackgroundsDay?: string[];   // 白天模式自定义背景
+  customBackgroundsNight?: string[]; // 夜间模式自定义背景
 }
 
 export interface InteractionLog {

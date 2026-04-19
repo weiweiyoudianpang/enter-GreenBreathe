@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
-import { Droplets, Eye, PersonStanding, Play, Leaf, X, Clock, Sparkles, Shield, Palette, ChevronDown, Brain, Heart } from 'lucide-react';
+import { Droplets, Eye, PersonStanding, Play, Leaf, X, Clock, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
+import { getTheme, resolveTheme, defaultBackgrounds } from '@/lib/theme';
+import { ThemeMode } from '@/types/extension';
 
 // ─── 数据 ─────────────────────────────────────────────────────────────────────
 
@@ -43,8 +45,8 @@ const FONT = "'Microsoft YaHei', 'PingFang SC', sans-serif";
 
 // ─── 提醒卡片预览（缩小版） ───────────────────────────────────────────────────
 
-function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = 'medium' }: {
-  taskType: TaskType; mbti: MbtiType; visible: boolean; onDismiss: () => void; cardSize?: CardSize;
+function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = 'medium', themeMode = 'auto' }: {
+  taskType: TaskType; mbti: MbtiType; visible: boolean; onDismiss: () => void; cardSize?: CardSize; themeMode?: ThemeMode;
 }) {
   const task = TASK_INFO[taskType];
   const message = MBTI_MESSAGES[mbti]?.[taskType] ?? MBTI_MESSAGES.INFP[taskType];
@@ -52,8 +54,10 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
   const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
   const sizeMap = { small: { width: 960, height: 570 }, medium: { width: 1280, height: 760 }, large: { width: 1600, height: 950 } };
   const { width, height } = sizeMap[cardSize];
-  const builtInBgImages = ['/images/copper-grass-goldfish.png', '/images/mint-photography.png', '/images/office-zen-green-cat.png'];
-  const bgImage = builtInBgImages[Math.floor(Math.random() * builtInBgImages.length)];
+  const effectiveTheme = resolveTheme(themeMode);
+  const t = getTheme(themeMode);
+  const bgFiles = defaultBackgrounds[effectiveTheme];
+  const bgImage = `/images/${effectiveTheme}/${bgFiles[Math.floor(Math.random() * bgFiles.length)]}`;
 
   return (
     <div style={{ position: 'fixed', top: 32, right: 32, zIndex: 9999, pointerEvents: 'none' }}>
@@ -72,15 +76,15 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
       }}>
         <div className={visible ? 'ink-wash-content' : ''} style={{
           position: 'relative', zIndex: 1, width: '100%', height: '30%', padding: '40px 60px',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(28px) saturate(150%)', WebkitBackdropFilter: 'blur(28px) saturate(150%)',
-          borderTop: '1px solid rgba(255,255,255,0.5)', display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          background: t.notifContentBg, backdropFilter: 'blur(28px) saturate(150%)', WebkitBackdropFilter: 'blur(28px) saturate(150%)',
+          borderTop: t.notifContentBorder, display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
-          <p style={{ fontSize: 32, lineHeight: 1.5, marginBottom: 16, fontWeight: 600, letterSpacing: 1, color: '#134e6f' }}>{message}</p>
-          <p style={{ fontSize: 20, color: '#38c9a3', marginBottom: 24, lineHeight: 1.5, fontWeight: 500 }}>{task.instruction}</p>
+          <p style={{ fontSize: 32, lineHeight: 1.5, marginBottom: 16, fontWeight: 600, letterSpacing: 1, color: t.notifTitle }}>{message}</p>
+          <p style={{ fontSize: 20, color: t.notifSubtitle, marginBottom: 24, lineHeight: 1.5, fontWeight: 500 }}>{task.instruction}</p>
           <div style={{ pointerEvents: 'auto', alignSelf: 'flex-end', marginTop: 'auto' }}>
             <button onClick={onDismiss} style={{
-              padding: '12px 40px', background: '#38c9a3', border: 'none', borderRadius: 100, fontSize: 18, cursor: 'pointer', color: '#fff',
-              fontFamily: FONT, transition: 'all 0.3s', fontWeight: 600, boxShadow: '0 4px 12px rgba(56,201,163,0.3)',
+              padding: '12px 40px', background: t.notifBtnBg, border: 'none', borderRadius: 100, fontSize: 18, cursor: 'pointer', color: t.notifBtnColor,
+              fontFamily: FONT, transition: 'all 0.3s', fontWeight: 600, boxShadow: `0 4px 12px ${t.accentGlow}`,
             }}>{randomAction}</button>
           </div>
         </div>
@@ -95,19 +99,22 @@ export default function Index() {
   const [selectedTask, setSelectedTask] = useState<TaskType>('hydration');
   const [selectedMbti, setSelectedMbti] = useState<MbtiType>('INFP');
   const [selectedCardSize, setSelectedCardSize] = useState<CardSize>('medium');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('auto');
   const [notifVisible, setNotifVisible] = useState(false);
   const [currentTask, setCurrentTask] = useState<TaskType>('hydration');
   const [currentMbti, setCurrentMbti] = useState<MbtiType>('INFP');
   const [currentCardSize, setCurrentCardSize] = useState<CardSize>('medium');
+  const [currentThemeMode, setCurrentThemeMode] = useState<ThemeMode>('auto');
 
   const triggerNotification = useCallback(() => {
     setCurrentTask(selectedTask);
     setCurrentMbti(selectedMbti);
     setCurrentCardSize(selectedCardSize);
+    setCurrentThemeMode(themeMode);
     setNotifVisible(false);
     setTimeout(() => setNotifVisible(true), 80);
     setTimeout(() => setNotifVisible(false), 8000);
-  }, [selectedTask, selectedMbti, selectedCardSize]);
+  }, [selectedTask, selectedMbti, selectedCardSize, themeMode]);
 
   const features = [
     { icon: Droplets, title: '智能饮水', desc: '根据你的工作节奏，温柔提醒补充水分。每次200ml，保持全天最佳状态。', color: '#3b9ede' },
@@ -125,7 +132,7 @@ export default function Index() {
   return (
     <div style={{ fontFamily: FONT, background: '#0a1e2e', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
       {/* 通知卡片 */}
-      <MiniNotificationCard taskType={currentTask} mbti={currentMbti} visible={notifVisible} onDismiss={() => setNotifVisible(false)} cardSize={currentCardSize} />
+      <MiniNotificationCard taskType={currentTask} mbti={currentMbti} visible={notifVisible} onDismiss={() => setNotifVisible(false)} cardSize={currentCardSize} themeMode={currentThemeMode} />
 
       {/* ───── Hero Section ───── */}
       <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -339,7 +346,7 @@ export default function Index() {
             </div>
 
             {/* 卡片尺寸 */}
-            <div style={{ marginBottom: 40 }}>
+            <div style={{ marginBottom: 36 }}>
               <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>卡片尺寸</h3>
               <div style={{ display: 'flex', gap: 12 }}>
                 {(['small', 'medium', 'large'] as CardSize[]).map(size => (
@@ -351,7 +358,30 @@ export default function Index() {
                     fontSize: 14, fontFamily: FONT, cursor: 'pointer', transition: 'all 0.3s',
                     fontWeight: selectedCardSize === size ? 600 : 400,
                   }}>
-                    {size === 'small' ? '小 800x450' : size === 'medium' ? '中 1024x576' : '大 1280x720'}
+                    {size === 'small' ? '小 960x570' : size === 'medium' ? '中 1280x760' : '大 1600x950'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 主题模式 */}
+            <div style={{ marginBottom: 40 }}>
+              <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>主题模式</h3>
+              <div style={{ display: 'flex', gap: 12 }}>
+                {([
+                  { mode: 'day' as ThemeMode, icon: <Sun size={16} />, label: '白天' },
+                  { mode: 'auto' as ThemeMode, icon: <SunMoon size={16} />, label: '自动' },
+                  { mode: 'night' as ThemeMode, icon: <Moon size={16} />, label: '夜间' },
+                ]).map(item => (
+                  <button key={item.mode} onClick={() => setThemeMode(item.mode)} style={{
+                    flex: 1, padding: '12px 20px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center',
+                    border: themeMode === item.mode ? '1px solid rgba(56,201,163,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                    background: themeMode === item.mode ? 'rgba(56,201,163,0.12)' : 'transparent',
+                    color: themeMode === item.mode ? '#38c9a3' : 'rgba(255,255,255,0.45)',
+                    fontSize: 15, fontFamily: FONT, cursor: 'pointer', transition: 'all 0.3s',
+                    fontWeight: themeMode === item.mode ? 600 : 400,
+                  }}>
+                    {item.icon} {item.label}
                   </button>
                 ))}
               </div>
