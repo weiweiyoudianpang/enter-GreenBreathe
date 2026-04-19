@@ -1,12 +1,147 @@
 import { createRoot } from 'react-dom/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import '@/index.css';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
-import { UserProfile, InteractionLog, PlantGrowth } from '@/types/extension';
-import { Droplets, Eye, PersonStanding, Leaf, Sun, Moon } from 'lucide-react';
-import { getTheme, resolveTheme, ThemeColors } from '@/lib/theme';
+import { UserProfile, PlantGrowth } from '@/types/extension';
+import { Droplets, Eye, PersonStanding, Leaf, Sun, Moon, Settings, Zap } from 'lucide-react';
+import { getTheme, resolveTheme } from '@/lib/theme';
+
+/** Breathing phase names and durations (ms) */
+const BREATH_PHASES = [
+  { label: '吸气', duration: 4000 },
+  { label: '屏息', duration: 4000 },
+  { label: '呼气', duration: 6000 },
+  { label: '放松', duration: 2000 },
+] as const;
+
+const TOTAL_CYCLE = BREATH_PHASES.reduce((s, p) => s + p.duration, 0); // 16s
+
+function BreathingLight({ accent, accentGlow, accentHover, text, textMuted, card, cardBorder, isDay }: {
+  accent: string; accentGlow: string; accentHover: string;
+  text: string; textMuted: string; card: string; cardBorder: string; isDay: boolean;
+}) {
+  const [phase, setPhase] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    if (!active) return;
+    const startTime = Date.now();
+    const tick = () => {
+      const now = Date.now();
+      const cycleTime = (now - startTime) % TOTAL_CYCLE;
+      setElapsed(cycleTime);
+      let acc = 0;
+      for (let i = 0; i < BREATH_PHASES.length; i++) {
+        acc += BREATH_PHASES[i].duration;
+        if (cycleTime < acc) { setPhase(i); break; }
+      }
+    };
+    const id = setInterval(tick, 50);
+    return () => clearInterval(id);
+  }, [active]);
+
+  // Compute the scale and opacity based on phase & elapsed
+  const getProgress = useCallback(() => {
+    let acc = 0;
+    for (let i = 0; i < phase; i++) acc += BREATH_PHASES[i].duration;
+    const phaseElapsed = elapsed - acc;
+    const phaseDuration = BREATH_PHASES[phase].duration;
+    return Math.min(phaseElapsed / phaseDuration, 1);
+  }, [phase, elapsed]);
+
+  const progress = active ? getProgress() : 0;
+
+  // Scale: inhale 0.6→1, hold 1, exhale 1→0.6, rest 0.6
+  let scale = 0.6;
+  let glowIntensity = 0.15;
+  if (active) {
+    if (phase === 0) { scale = 0.6 + 0.4 * progress; glowIntensity = 0.15 + 0.35 * progress; }
+    else if (phase === 1) { scale = 1; glowIntensity = 0.5; }
+    else if (phase === 2) { scale = 1 - 0.4 * progress; glowIntensity = 0.5 - 0.35 * progress; }
+    else { scale = 0.6; glowIntensity = 0.15; }
+  }
+
+  const ringColor = isDay ? 'rgba(16,185,129,' : 'rgba(56,201,163,';
+
+  return (
+    <div style={{
+      background: card,
+      border: `1px solid ${cardBorder}`,
+      borderRadius: 16,
+      padding: '20px',
+      marginBottom: 12,
+      textAlign: 'center',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: active ? accent : textMuted,
+            boxShadow: active ? `0 0 8px ${accentGlow}` : 'none',
+            transition: 'all 0.5s',
+          }} />
+          <span style={{ fontSize: 14, color: text, fontWeight: 500 }}>深呼吸放松</span>
+        </div>
+        <button
+          onClick={() => setActive(!active)}
+          style={{
+            fontSize: 12, padding: '4px 14px', borderRadius: 8, cursor: 'pointer',
+            border: `1px solid ${cardBorder}`,
+            background: active ? accent : 'transparent',
+            color: active ? '#fff' : textMuted,
+            fontFamily: "'Microsoft YaHei','PingFang SC',sans-serif",
+            transition: 'all 0.3s',
+          }}
+        >
+          {active ? '停止' : '开始'}
+        </button>
+      </div>
+
+      {/* Breathing circle */}
+      <div style={{
+        position: 'relative',
+        width: 120, height: 120,
+        margin: '0 auto 12px',
+      }}>
+        {/* Glow ring */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${ringColor}${(glowIntensity * 0.4).toFixed(2)}) 0%, transparent 70%)`,
+          transform: `scale(${scale * 1.4})`,
+          transition: active ? 'transform 0.3s ease-out' : 'transform 0.6s ease',
+        }} />
+        {/* Main orb */}
+        <div style={{
+          position: 'absolute',
+          inset: '15%',
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 35% 35%, ${accent}, ${accentHover})`,
+          opacity: 0.3 + glowIntensity * 0.7,
+          transform: `scale(${scale})`,
+          transition: active ? 'transform 0.3s ease-out, opacity 0.3s' : 'transform 0.6s ease, opacity 0.6s',
+          boxShadow: `0 0 ${Math.round(glowIntensity * 40)}px ${ringColor}${glowIntensity.toFixed(2)})`,
+        }} />
+        {/* Center text */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, fontWeight: 600, color: text,
+          letterSpacing: 4,
+        }}>
+          {active ? BREATH_PHASES[phase].label : '---'}
+        </div>
+      </div>
+
+      {!active && (
+        <p style={{ fontSize: 12, color: textMuted, margin: 0 }}>
+          4-4-6-2 节奏呼吸，缓解压力
+        </p>
+      )}
+    </div>
+  );
+}
 
 function PopupPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -85,7 +220,7 @@ function PopupPage() {
         </div>
 
         {/* Plant growth */}
-        <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
+        <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Leaf size={16} style={{ color: t.accent }} />
@@ -101,6 +236,18 @@ function PopupPage() {
           </p>
         </div>
 
+        {/* Breathing Light */}
+        <BreathingLight
+          accent={t.accent}
+          accentGlow={t.accentGlow}
+          accentHover={t.accentHover}
+          text={t.text}
+          textMuted={t.textMuted}
+          card={t.card}
+          cardBorder={t.cardBorder}
+          isDay={isDay}
+        />
+
         {/* Action buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           <button onClick={triggerTest} style={{
@@ -108,15 +255,17 @@ function PopupPage() {
             background: `linear-gradient(135deg, ${t.accent}, ${t.accentHover})`, border: 'none', color: t.textOnAccent,
             fontFamily: "'Microsoft YaHei','PingFang SC',sans-serif",
             boxShadow: `0 4px 16px ${t.accentGlow}`, transition: 'all 0.3s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
-            立即测试提醒
+            <Zap size={16} /> 立即测试提醒
           </button>
           <button onClick={openOptions} style={{
             width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, fontWeight: 500, letterSpacing: 1, cursor: 'pointer',
             background: t.card, border: `1px solid ${t.cardBorder}`, color: t.textSecondary,
             fontFamily: "'Microsoft YaHei','PingFang SC',sans-serif", transition: 'all 0.3s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
-            打开设置
+            <Settings size={14} /> 打开设置
           </button>
         </div>
 

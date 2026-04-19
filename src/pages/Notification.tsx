@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import '@/index.css';
 import { NotificationData, UserProfile } from '@/types/extension';
 import { getTheme, resolveTheme, defaultBackgrounds } from '@/lib/theme';
@@ -25,8 +25,28 @@ function NotificationWindow() {
     setTimeout(fetchData, 50);
   }, []);
 
+  // Compute random values ONCE when data is loaded, not on every render
+  const bgImage = useMemo(() => {
+    if (!profile) return '';
+    const effectiveTheme = resolveTheme(profile.themeMode);
+    const customBgs = effectiveTheme === 'day'
+      ? (profile.customBackgroundsDay || profile.customBackgrounds || [])
+      : (profile.customBackgroundsNight || []);
+    if (customBgs.length > 0) {
+      return customBgs[Math.floor(Math.random() * customBgs.length)];
+    }
+    const defaults = defaultBackgrounds[effectiveTheme];
+    const file = defaults[Math.floor(Math.random() * defaults.length)];
+    return chrome.runtime.getURL(`images/${effectiveTheme}/${file}`);
+  }, [profile]);
+
+  const randomAction = useMemo(() => {
+    const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
+    return actionTexts[Math.floor(Math.random() * actionTexts.length)];
+  }, []);
+
   const handleClose = async () => {
-    setShow(false);
+    // Log interaction immediately
     if (notificationData) {
       const logs = await chrome.storage.local.get('interactionLog');
       const interactionLog = logs.interactionLog || [];
@@ -36,8 +56,18 @@ function NotificationWindow() {
         taskType: notificationData.taskType,
       });
       await chrome.storage.local.set({ interactionLog: interactionLog.slice(-100) });
+
+      // Update plant growth
+      const plantResult = await chrome.storage.local.get('plantGrowth');
+      const plantGrowth = plantResult.plantGrowth || { level: 1, totalCompletions: 0, unlockedForms: ['bamboo_sprout'] };
+      plantGrowth.totalCompletions += 1;
+      if (plantGrowth.totalCompletions % 10 === 0) {
+        plantGrowth.level += 1;
+      }
+      await chrome.storage.local.set({ plantGrowth });
     }
-    setTimeout(() => window.close(), 500);
+    // Close window immediately
+    window.close();
   };
 
   if (!notificationData || !profile) {
@@ -48,7 +78,6 @@ function NotificationWindow() {
     );
   }
 
-  const effectiveTheme = resolveTheme(profile.themeMode);
   const t = getTheme(profile.themeMode);
   const cardSize = profile.cardSize || 'medium';
   const sizeMap = {
@@ -65,23 +94,6 @@ function NotificationWindow() {
   if (isThinker) scienceText = notificationData.instruction.mbtiAdaptation.T;
   else if (isIntuitive) scienceText = notificationData.instruction.mbtiAdaptation.N;
   else scienceText = notificationData.instruction.mbtiAdaptation.F;
-
-  const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
-  const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
-
-  // Background image: pick from the correct theme folder
-  let bgImage: string;
-  const customBgs = effectiveTheme === 'day'
-    ? (profile.customBackgroundsDay || profile.customBackgrounds || [])
-    : (profile.customBackgroundsNight || []);
-
-  if (customBgs.length > 0) {
-    bgImage = customBgs[Math.floor(Math.random() * customBgs.length)];
-  } else {
-    const defaults = defaultBackgrounds[effectiveTheme];
-    const file = defaults[Math.floor(Math.random() * defaults.length)];
-    bgImage = chrome.runtime.getURL(`images/${effectiveTheme}/${file}`);
-  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
