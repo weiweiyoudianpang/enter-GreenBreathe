@@ -84,7 +84,7 @@ function getPageStyles(t: ThemeColors, isDay: boolean) {
     textPrimary, textSecondary, textTertiary, cardBg, cardBorder, controlBg, controlBorder,
     accentColor, activeBg, activeBorder, inactiveText,
     sectionBg1, sectionBg2, sectionBg3, pageBg, footerBg,
-    heroOverlay, heroGradient, ctaBtnBg, ctaBtnShadow,
+    heroOverlay, ctaBtnBg, ctaBtnShadow,
     ghostBtnBg, ghostBtnBorder, ghostBtnColor,
     glowOrb1, glowOrb2, topLine, decorLine, mbtiGroupColors,
   };
