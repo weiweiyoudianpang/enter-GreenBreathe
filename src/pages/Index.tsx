@@ -106,8 +106,6 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
   const t = getTheme(themeMode);
   const bgFiles = defaultBackgrounds[effectiveTheme];
   const bgImage = useMemo(() => `/images/${effectiveTheme}/${bgFiles[Math.floor(Math.random() * bgFiles.length)]}`, [visible, effectiveTheme]);
-  const isNight = effectiveTheme === 'night';
-  const inkBgColor = isNight ? '#0a1a28' : '#e8f0e4';
   const [inkDone, setInkDone] = useState(false);
 
   // Reset ink state when card becomes visible
@@ -121,7 +119,6 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
     <div style={{ position: 'fixed', top: 32, right: 32, zIndex: 9999, pointerEvents: 'none' }}>
       <div style={{
         width, height, borderRadius: 24,
-        boxShadow: '0 30px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.15)',
         fontFamily: FONT,
         opacity: visible ? 1 : 0,
         pointerEvents: 'none',
@@ -130,22 +127,16 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
         visibility: visible ? 'visible' : 'hidden',
         transition: 'visibility 0.3s, opacity 0.3s',
         transform: visible ? 'scale(1)' : 'scale(0.96)',
+        mixBlendMode: 'multiply',
       }}>
-        {/* Base color layer */}
-        <div style={{ position: 'absolute', inset: 0, background: inkBgColor }} />
-        {/* Image layer */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url('${bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center',
-          zIndex: 1,
-        }} />
-        {/* Canvas ink wash mask */}
+        {/* Canvas ink wash: paint mode - transparent background, image painted in */}
         {visible && (
           <InkWashCanvas
-            bgColor={inkBgColor}
+            mode="paint"
+            imageSrc={bgImage}
             speed={1.2}
             onComplete={handleInkComplete}
-            style={{ zIndex: 2 }}
+            style={{ zIndex: 1, borderRadius: 24 }}
           />
         )}
         {/* Content */}
@@ -157,6 +148,7 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
           transform: inkDone ? 'translateY(0)' : 'translateY(16px)',
           filter: inkDone ? 'blur(0)' : 'blur(6px)',
           transition: 'all 0.8s cubic-bezier(0.22,1,0.36,1)',
+          borderRadius: '0 0 24px 24px',
         }}>
           <p style={{ fontSize: 32, lineHeight: 1.5, marginBottom: 16, fontWeight: 600, letterSpacing: 1, color: t.notifTitle }}>{message}</p>
           <p style={{ fontSize: 20, color: t.notifSubtitle, marginBottom: 24, lineHeight: 1.5, fontWeight: 500 }}>{task.instruction}</p>
