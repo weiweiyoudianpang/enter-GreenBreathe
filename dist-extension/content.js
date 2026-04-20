@@ -1,184 +1,43 @@
-console.log("[GreenBreathe Content] Script loaded on:",window.location.href);function T(){const e=document.createElement("div");return e.id="green-breathe-notification-root",document.body.appendChild(e),e}function S(){if(document.fullscreenElement)return console.log("[GreenBreathe] Delayed: Fullscreen detected"),!0;const e=document.activeElement;if(e&&(e.tagName==="INPUT"||e.tagName==="TEXTAREA"||e.getAttribute("contenteditable")==="true"))return console.log("[GreenBreathe] Delayed: User is typing"),!0;const i=document.querySelectorAll("video");for(const o of i){const a=o.getBoundingClientRect(),c=a.width>200&&a.height>150;if(!o.paused&&o.currentTime>0&&c)return console.log("[GreenBreathe] Delayed: Video playing"),!0}const t=document.querySelectorAll("audio");for(const o of t)if(!o.paused&&o.currentTime>0)return console.log("[GreenBreathe] Delayed: Audio playing"),!0;return navigator.mediaDevices&&document.querySelector("video[autoplay]")?(console.log("[GreenBreathe] Delayed: Video call detected"),!0):document.querySelectorAll('form[data-submitting="true"]').length>0?(console.log("[GreenBreathe] Delayed: Form submitting"),!0):(console.log("[GreenBreathe] ✓ Safe to show notification"),!1)}let f=0,g=0;document.addEventListener("mousemove",()=>{f=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{g=Date.now()},{passive:!0});function k(){const e=Date.now();return e-f<5e3||e-g<5e3}async function l(e,i=0){if(S()&&i<3){console.log(`[GreenBreathe] Retry attempt ${i+1}/3 after 30s`),setTimeout(()=>l(e,i+1),3e4);return}if(k()&&i===0){console.log("[GreenBreathe] User actively interacting, delaying 10s"),setTimeout(()=>l(e,i),1e4);return}const r=(await chrome.storage.local.get("userProfile")).userProfile?.notificationPosition||"top_right",n=await B(e,r);let o=document.getElementById("green-breathe-notification-root");o||(o=T()),o.innerHTML="",o.appendChild(n),setTimeout(()=>{const a=n.shadowRoot?.querySelector(".notification-card");a&&a.classList.add("show")},100),setTimeout(()=>{p(n)},8e3)}async function B(e,i){const t=document.createElement("div");t.className=`green-breathe-notification ${i}`;const r=t.attachShadow({mode:"open"}),n=await chrome.storage.local.get("userProfile"),o=n.userProfile?.mbtiType||"INFP",a=n.userProfile?.cardSize||"medium",c={small:{width:960,height:570},medium:{width:1280,height:760},large:{width:1600,height:950}},{width:m,height:b}=c[a],x=o.includes("T"),y=o.includes("N");let s="";x?s=e.instruction.mbtiAdaptation.T:y?s=e.instruction.mbtiAdaptation.N:s=e.instruction.mbtiAdaptation.F;const d=["了解啦","谢谢关心","OK","收到","这就去"],v=d[Math.floor(Math.random()*d.length)],u=["https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a4ec.png","https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/f5db.png","https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/e7ab.png"],w=u[Math.floor(Math.random()*u.length)];return r.innerHTML=`
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      @keyframes inkWashSpread {
-        0% {
-          opacity: 0;
-          filter: blur(30px) contrast(1.2) brightness(1.2);
-          transform: scale(1.05);
-        }
-        40% {
-          opacity: 0.6;
-          filter: blur(15px) contrast(1.1) brightness(1.1);
-        }
-        100% {
-          opacity: 1;
-          filter: blur(0px) contrast(1) brightness(1);
-          transform: scale(1);
-        }
-      }
-
-      @keyframes inkWashText {
-        0% {
-          opacity: 0;
-          filter: blur(12px);
-          transform: translateY(10px);
-        }
-        40% {
-          opacity: 0;
-          filter: blur(12px);
-          transform: translateY(10px);
-        }
-        100% {
-          opacity: 1;
-          filter: blur(0px);
-          transform: translateY(0);
-        }
-      }
-      
-      /* 🎨 整体卡片：根据用户设置调整尺寸，背景图片覆盖整张卡片 */
-      .notification-card {
-        width: ${m}px;
-        height: ${b}px;
-        border-radius: 24px;
-        box-shadow: 
-          0 30px 60px rgba(0, 0, 0, 0.2),
-          0 0 0 1px rgba(255, 255, 255, 0.15);
-        font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
-        opacity: 0;
-        position: relative;
-        overflow: hidden;
-        /* 🎯 核心：仅卡片本体可交互，不阻挡页面 */
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end; /* 内容靠下对齐 */
-        
-        /* 清晰的翠绿风景背景，覆盖整张卡片 */
-        background-image: url('${w}');
-        background-size: cover;
-        background-position: center;
-      }
-      
-      .notification-card.show {
-        animation: inkWashSpread 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      }
-      
-      /* 🎨 文本框区域：毛玻璃质感，只占整个窗口的 30% */
-      .content-box {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 30%; /* 严格控制占比 30% */
-        padding: 40px 60px;
-        
-        /* 毛玻璃效果：白色半透明底色，让文字清晰，同时透出背景 */
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px) saturate(120%);
-        -webkit-backdrop-filter: blur(20px) saturate(120%);
-        border-top: 1px solid rgba(255, 255, 255, 0.4);
-        
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-      
-      .notification-card.show .content-box {
-        animation: inkWashText 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      }
-      
-      .encouragement {
-        font-size: 32px;
-        line-height: 1.5;
-        margin-bottom: 16px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: #1a331a; /* 深翠绿色文字 */
-      }
-      
-      .instruction {
-        color: #3a5a3a; /* 柔和的绿色 */
-        font-size: 20px;
-        margin-bottom: 24px;
-        line-height: 1.5;
-        font-weight: 400;
-      }
-      
-      .actions {
-        pointer-events: auto;
-        align-self: flex-end;
-        margin-top: auto;
-      }
-      
-      .action-btn {
-        padding: 12px 40px;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(150, 200, 150, 0.4);
-        border-radius: 100px;
-        color: #2c4c2c;
-        font-size: 18px;
-        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      }
-      
-      .action-btn:hover {
-        background: #ffffff;
-        border-color: #8fbc8f;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      }
-    </style>
-    
-    <div class="notification-card">
-      <div class="content-box">
-        <div class="encouragement">${e.encouragement}</div>
-        <div class="instruction">${e.instruction.instruction} · ${s}</div>
-        <div class="actions">
-          <button class="action-btn action-dismiss">${v}</button>
-        </div>
-      </div>
+console.log("[GreenBreathe Content] Script loaded on:",window.location.href);function Z(t,n,o){return Math.sin(t*2+n)*.22+Math.sin(t*3.7+n*1.3+o*8e-4)*.14+Math.sin(t*7.1+n*2.1)*.09+Math.sin(t*11.3+n*.7)*.05}function E(t,n,o,r,c,e,i){if(r<=1)return;const x=64;for(let p=0;p<=x;p++){const a=p/x*Math.PI*2,u=Z(a,c,i)*e,h=r*(1+u),m=n+Math.cos(a)*h,P=o+Math.sin(a)*h;p===0?t.moveTo(m,P):t.lineTo(m,P)}t.closePath()}function k(t,n,o){const r=Math.random()*Math.PI*2,c=t.r*(.75+Math.random()*.35),e=t.x+Math.cos(r)*c,i=t.y+Math.sin(r)*c;e>-20&&e<n+20&&i>-20&&i<o+20&&t.subs.push({x:e,y:i,r:0,maxR:12+Math.random()*28,speed:.4+Math.random()*.8,phase:Math.random()*100,wobble:.3+Math.random()*.35})}function tt(t,n,o){const r=Math.sqrt(t*t+n*n),c=4+Math.floor(Math.random()*3),e=[];for(let i=0;i<c;i++)e.push({x:t*(.12+Math.random()*.76),y:n*(.12+Math.random()*.76),r:0,maxR:r*(.45+Math.random()*.4),speed:(1+Math.random()*1.8)*o,phase:Math.random()*200,wobble:.2+Math.random()*.25,delay:i*160+Math.random()*220,subs:[],lastSubR:0});return e}function et(t,n,o,r){let c=!0;for(const e of t){if(n<e.delay){c=!1;continue}if(e.r<e.maxR){const i=1+(1-e.r/e.maxR)*.6;e.r=Math.min(e.r+e.speed*i,e.maxR),c=!1}e.r-e.lastSubR>25+Math.random()*15&&(e.lastSubR=e.r,k(e,o,r),Math.random()>.6&&k(e,o,r));for(const i of e.subs)i.r<i.maxR&&(i.r=Math.min(i.r+i.speed,i.maxR),c=!1)}return c}function ot(){if(document.fullscreenElement)return!0;const t=document.activeElement;if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.getAttribute("contenteditable")==="true"))return!0;const n=document.querySelectorAll("video");for(const o of n){const r=o.getBoundingClientRect();if(!o.paused&&o.currentTime>0&&r.width>200&&r.height>150)return!0}return!1}let _=0,G=0;document.addEventListener("mousemove",()=>{_=Date.now()},{passive:!0});document.addEventListener("scroll",()=>{G=Date.now()},{passive:!0});function nt(){const t=Date.now();return t-_<5e3||t-G<5e3}async function rt(){const n=(await chrome.storage.local.get("userProfile")).userProfile||{},o=n.themeMode||"auto",r=new Date().getHours(),c=o==="day"||o==="auto"&&r>=6&&r<18,e=["copper-grass-goldfish.png","mint-photography.png","office-zen-green-cat.png"],i=["neon-leaf.png","moonlight-forest.png","shattered-moon.jpg"],x=n.customBackgroundsDay||n.customBackgrounds||[],p=n.customBackgroundsNight||[];let a;return c?a=x.length>0?x:e.map(u=>chrome.runtime.getURL(`images/day/${u}`)):a=p.length>0?p:i.map(u=>chrome.runtime.getURL(`images/night/${u}`)),c?{isDay:!0,bgImages:a,accent:"#059669",accentHover:"#047857",textPrimary:"#064e3b",textSecondary:"#065f46",contentBg:"rgba(255,255,255,0.65)",contentBorder:"1px solid rgba(16,185,129,0.2)",btnBg:"#059669",btnColor:"#ffffff"}:{isDay:!1,bgImages:a,accent:"#38c9a3",accentHover:"#2db892",textPrimary:"#e8f4f0",textSecondary:"#a0c4b8",contentBg:"rgba(10,30,46,0.55)",contentBorder:"1px solid rgba(56,201,163,0.15)",btnBg:"#38c9a3",btnColor:"#0a1e2e"}}async function $(t,n=0,o=3,r=20){if(ot()&&n<3){setTimeout(()=>$(t,n+1,o,r),3e4);return}if(nt()&&n===0){setTimeout(()=>$(t,n,o,r),1e4);return}const e=(await chrome.storage.local.get("userProfile")).userProfile||{},i=e.notificationPosition||"top_right",x=e.cardSize||"medium",p=e.mbtiType||"INFP",a=await rt(),u={small:{width:960,height:570},medium:{width:1280,height:760},large:{width:1600,height:950}},{width:h,height:m}=u[x]||u.medium,P=p.includes("T"),q=p.includes("N");let S="";P?S=t.instruction.mbtiAdaptation.T:q?S=t.instruction.mbtiAdaptation.N:S=t.instruction.mbtiAdaptation.F;const z=["了解啦","谢谢关心","OK","收到","这就去"],O=z[Math.floor(Math.random()*z.length)],U=a.bgImages[Math.floor(Math.random()*a.bgImages.length)];let y=document.getElementById("green-breathe-notification-root");y||(y=document.createElement("div"),y.id="green-breathe-notification-root",document.body.appendChild(y)),y.innerHTML="";const T=document.createElement("div");T.className=`green-breathe-notification ${i}`;const L=T.attachShadow({mode:"open"}),b=document.createElement("div");b.style.cssText=`
+    width: ${h}px; height: ${m}px; position: relative; overflow: hidden;
+    border-radius: 24px; pointer-events: none;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    mix-blend-mode: multiply;
+  `;const B=document.createElement("canvas");B.style.cssText="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;border-radius:24px;",b.appendChild(B);const g=document.createElement("div");g.style.cssText=`
+    position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+    background: ${a.contentBg};
+    backdrop-filter: blur(28px) saturate(150%); -webkit-backdrop-filter: blur(28px) saturate(150%);
+    border-top: ${a.contentBorder};
+    padding: 40px 60px;
+    display: flex; flex-direction: column; justify-content: center;
+    z-index: 2; pointer-events: auto;
+    opacity: 0; transform: translateY(20px); filter: blur(8px);
+    transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
+    border-radius: 0 0 24px 24px;
+  `,g.innerHTML=`
+    <div style="font-size:32px;line-height:1.5;margin-bottom:16px;color:${a.textPrimary};font-weight:600;letter-spacing:1px">${t.encouragement}</div>
+    <div style="font-size:20px;color:${a.textSecondary};margin-bottom:24px;line-height:1.6;font-weight:500">${t.instruction.instruction} · ${S}</div>
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="gb-dismiss" style="
+        padding:12px 32px;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;border:none;
+        font-family:'Microsoft YaHei','PingFang SC',sans-serif;
+        background:${a.btnBg};color:${a.btnColor};
+        box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 0.3s ease;pointer-events:auto;
+      ">${O}</button>
     </div>
-  `,r.querySelector(".action-dismiss")?.addEventListener("click",()=>{N("dismissed",e.taskType),p(t)}),t}function p(e){const t=e.shadowRoot?.querySelector(".notification-card");t&&(t.style.animation="none",t.style.transition="all 1.5s cubic-bezier(0.22, 1, 0.36, 1)",t.style.opacity="0",t.style.filter="blur(10px)",t.style.transform="scale(0.95)"),setTimeout(()=>{e.remove()},2e3)}async function N(e,i){try{const t={timestamp:Date.now(),action:e,taskType:i},n=(await chrome.storage.local.get("interactionLog")).interactionLog||[];n.push(t),n.length>100&&n.splice(0,n.length-100),await chrome.storage.local.set({interactionLog:n})}catch(t){console.error("Error logging interaction:",t)}}chrome.runtime.onMessage.addListener((e,i,t)=>{if(e.type==="SHOW_NOTIFICATION")return console.log("[GreenBreathe Content] Received SHOW_NOTIFICATION message",e.data),l(e.data).then(()=>{console.log("[GreenBreathe Content] Notification displayed successfully"),t({success:!0})}).catch(r=>{console.error("[GreenBreathe Content] Error showing notification:",r),t({success:!1,error:r.message})}),!0});const h=document.createElement("style");h.textContent=`
+  `,b.appendChild(g),L.appendChild(b),y.appendChild(T);const l=new Image;l.crossOrigin="anonymous",l.onload=()=>{const C=Math.min(window.devicePixelRatio||1,2);B.width=h*C,B.height=m*C;const s=B.getContext("2d");if(!s)return;s.scale(C,C);const K=l.width/l.height,A=h/m;let I=0,R=0,w=l.width,M=l.height;K>A?(w=l.height*A,I=(l.width-w)/2):(M=l.width/A,R=(l.height-M)/2);const W=o>0?4/o:999,X=o>0?o*1e3:0;if(o<=0)s.drawImage(l,I,R,w,M,0,0,h,m),g.style.opacity="1",g.style.transform="translateY(0)",g.style.filter="blur(0)";else{let F=function(Q){if(H)return;const v=Q-J,V=et(N,v,h,m);s.clearRect(0,0,h,m),s.save(),s.beginPath();for(const d of N){d.r>1&&E(s,d.x,d.y,d.r,d.phase,d.wobble,v);for(const f of d.subs)f.r>1&&E(s,f.x,f.y,f.r,f.phase,f.wobble,v)}s.clip(),s.drawImage(l,I,R,w,M,0,0,h,m),s.restore(),s.globalAlpha=.12,s.save(),s.beginPath();for(const d of N){d.r>1&&E(s,d.x,d.y,d.r*1.12,d.phase,d.wobble,v);for(const f of d.subs)f.r>1&&E(s,f.x,f.y,f.r*1.15,f.phase,f.wobble,v)}if(s.clip(),s.drawImage(l,I,R,w,M,0,0,h,m),s.restore(),s.globalAlpha=1,V||v>X){H=!0,s.clearRect(0,0,h,m),s.drawImage(l,I,R,w,M,0,0,h,m),g.style.opacity="1",g.style.transform="translateY(0)",g.style.filter="blur(0)";return}requestAnimationFrame(F)};const N=tt(h,m,W),J=performance.now();let H=!1;requestAnimationFrame(F)}},l.onerror=()=>{g.style.opacity="1",g.style.transform="translateY(0)",g.style.filter="blur(0)"},l.src=U;const j=L.querySelector(".gb-dismiss"),D=()=>{it("completed",t.taskType),b.style.transition="all 1.2s cubic-bezier(0.22,1,0.36,1)",b.style.opacity="0",b.style.filter="blur(10px)",b.style.transform="scale(0.95)",setTimeout(()=>T.remove(),1500)};j?.addEventListener("click",D),setTimeout(()=>{T.parentElement&&D()},r*1e3)}async function it(t,n){try{const r=(await chrome.storage.local.get("interactionLog")).interactionLog||[];if(r.push({timestamp:Date.now(),action:t,taskType:n}),r.length>100&&r.splice(0,r.length-100),await chrome.storage.local.set({interactionLog:r}),t==="completed"){const e=(await chrome.storage.local.get("plantGrowth")).plantGrowth||{level:0,totalCompletions:0,unlockedForms:[]};e.totalCompletions+=1,e.level=Math.floor(e.totalCompletions/10),await chrome.storage.local.set({plantGrowth:e})}}catch(o){console.error("[GreenBreathe] Error logging interaction:",o)}}chrome.runtime.onMessage.addListener((t,n,o)=>{if(t.type==="SHOW_NOTIFICATION")return $(t.data,0,t.inkDuration,t.cardDisplayDuration).then(()=>o({success:!0})).catch(r=>o({success:!1,error:r.message})),!0});const Y=document.createElement("style");Y.textContent=`
   #green-breathe-notification-root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2147483647;
-    pointer-events: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2147483647; pointer-events: none;
   }
-  
   #green-breathe-notification-root .green-breathe-notification {
-    position: absolute;
-    pointer-events: none;
+    position: absolute; pointer-events: none;
   }
-  
-  #green-breathe-notification-root .top_right {
-    top: 32px;
-    right: 32px;
+  #green-breathe-notification-root .top_right { top: 32px; right: 32px; }
+  #green-breathe-notification-root .top_left { top: 32px; left: 32px; }
+  #green-breathe-notification-root .bottom_right { bottom: 32px; right: 32px; }
+  #green-breathe-notification-root .bottom_left { bottom: 32px; left: 32px; }
+  #green-breathe-notification-root .center {
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
   }
-  
-  #green-breathe-notification-root .top_left {
-    top: 32px;
-    left: 32px;
-  }
-  
-  #green-breathe-notification-root .bottom_right {
-    bottom: 32px;
-    right: 32px;
-  }
-  
-  #green-breathe-notification-root .bottom_left {
-    bottom: 32px;
-    left: 32px;
-  }
-`;document.head.appendChild(h);console.log("GreenBreathe Content Script Loaded");
+`;document.head.appendChild(Y);console.log("[GreenBreathe Content] Script ready");

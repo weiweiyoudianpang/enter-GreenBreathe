@@ -8,6 +8,22 @@ const rootDir = path.resolve(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
 const distDir = path.join(rootDir, 'dist-extension');
 
+// Recursive copy helper
+function copyDirRecursive(src, dest) {
+  if (!fs.existsSync(src)) return;
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 // Copy manifest.json
 const manifestSrc = path.join(publicDir, 'manifest.json');
 const manifestDest = path.join(distDir, 'manifest.json');
@@ -20,40 +36,14 @@ if (fs.existsSync(manifestSrc)) {
 // Copy icons directory
 const iconsSrc = path.join(publicDir, 'icons');
 const iconsDest = path.join(distDir, 'icons');
+copyDirRecursive(iconsSrc, iconsDest);
+console.log('✓ Copied icons');
 
-if (fs.existsSync(iconsSrc)) {
-  if (!fs.existsSync(iconsDest)) {
-    fs.mkdirSync(iconsDest, { recursive: true });
-  }
-  
-  const files = fs.readdirSync(iconsSrc);
-  files.forEach(file => {
-    fs.copyFileSync(
-      path.join(iconsSrc, file),
-      path.join(iconsDest, file)
-    );
-  });
-  console.log('✓ Copied icons');
-}
-
-// Copy images directory
+// Copy images directory (recursive, includes day/ and night/ subdirs)
 const imagesSrc = path.join(publicDir, 'images');
 const imagesDest = path.join(distDir, 'images');
-
-if (fs.existsSync(imagesSrc)) {
-  if (!fs.existsSync(imagesDest)) {
-    fs.mkdirSync(imagesDest, { recursive: true });
-  }
-  
-  const files = fs.readdirSync(imagesSrc);
-  files.forEach(file => {
-    fs.copyFileSync(
-      path.join(imagesSrc, file),
-      path.join(imagesDest, file)
-    );
-  });
-  console.log('✓ Copied images');
-}
+copyDirRecursive(imagesSrc, imagesDest);
+console.log('✓ Copied images (including day/night subdirectories)');
 
 console.log('\n✅ Extension build complete!');
 console.log('📦 Load the extension from:', distDir);
