@@ -16,12 +16,37 @@ chrome.runtime.onInstalled.addListener(async () => {
   console.log('[GreenBreathe] Extension installed');
   const profile = await storage.getUserProfile();
   await storage.setUserProfile(profile);
-  await setupAlarms();
+  await resetAlarms();
+});
+
+// Reset alarms on browser startup to prevent stale overdue alarms from firing immediately
+chrome.runtime.onStartup.addListener(async () => {
+  console.log('[GreenBreathe] Browser started, resetting alarms');
+  await resetAlarms();
 });
 
 // ─── Alarms ─────────────────────────────────────────────────────────────────
 
-async function setupAlarms() {
+// Track the last trigger time per task to prevent premature re-fires
+const LAST_TRIGGER_KEY = 'greenBreathe_lastTrigger';
+
+async function getLastTriggerTimes(): Promise<Record<string, number>> {
+  const result = await chrome.storage.local.get(LAST_TRIGGER_KEY);
+  return result[LAST_TRIGGER_KEY] || {};
+}
+
+async function setLastTriggerTime(taskType: TaskType) {
+  const times = await getLastTriggerTimes();
+  times[taskType] = Date.now();
+  await chrome.storage.local.set({ [LAST_TRIGGER_KEY]: times });
+}
+
+/**
+ * Reset all alarms using absolute `when` timestamps.
+ * Uses the last trigger time to calculate the correct next fire time,
+ * preventing early triggers after browser restart.
+ */
+async function resetAlarms() {
   const profile = await storage.getUserProfile();
   await chrome.alarms.clearAll();
 
@@ -30,24 +55,35 @@ async function setupAlarms() {
     return;
   }
 
-  if (profile.hydrationInterval > 0) {
-    chrome.alarms.create(ALARM_NAMES.HYDRATION, {
-      delayInMinutes: profile.hydrationInterval,
-      periodInMinutes: profile.hydrationInterval,
+  const lastTriggers = await getLastTriggerTimes();
+  const now = Date.now();
+
+  const createSmartAlarm = (name: string, intervalMin: number, taskKey: string) => {
+    if (intervalMin <= 0) return;
+    const intervalMs = intervalMin * 60 * 1000;
+    const lastFired = lastTriggers[taskKey] || 0;
+    const elapsed = now - lastFired;
+
+    // Calculate when the alarm should next fire
+    let nextFireMs: number;
+    if (lastFired === 0 || elapsed >= intervalMs) {
+      // Never fired or already overdue: fire after full interval from now
+      nextFireMs = now + intervalMs;
+    } else {
+      // Not yet due: fire at the remaining time
+      nextFireMs = lastFired + intervalMs;
+    }
+
+    chrome.alarms.create(name, {
+      when: nextFireMs,
+      periodInMinutes: intervalMin,
     });
-  }
-  if (profile.eyeCareInterval > 0) {
-    chrome.alarms.create(ALARM_NAMES.EYE_CARE, {
-      delayInMinutes: profile.eyeCareInterval,
-      periodInMinutes: profile.eyeCareInterval,
-    });
-  }
-  if (profile.movementInterval > 0) {
-    chrome.alarms.create(ALARM_NAMES.MOVEMENT, {
-      delayInMinutes: profile.movementInterval,
-      periodInMinutes: profile.movementInterval,
-    });
-  }
+    console.log(`[GreenBreathe] Alarm ${name}: next in ${Math.round((nextFireMs - now) / 60000)}min`);
+  };
+
+  createSmartAlarm(ALARM_NAMES.HYDRATION, profile.hydrationInterval, 'hydration');
+  createSmartAlarm(ALARM_NAMES.EYE_CARE, profile.eyeCareInterval, 'eyeCare');
+  createSmartAlarm(ALARM_NAMES.MOVEMENT, profile.movementInterval, 'movement');
 }
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -58,7 +94,24 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     case ALARM_NAMES.MOVEMENT: taskType = 'movement'; break;
     default: return;
   }
-  if (taskType) await triggerNotification(taskType);
+  if (!taskType) return;
+
+  // Guard: skip if fired too early (less than 80% of interval elapsed)
+  const profile = await storage.getUserProfile();
+  const intervalMin = taskType === 'hydration' ? profile.hydrationInterval
+    : taskType === 'eyeCare' ? profile.eyeCareInterval
+    : profile.movementInterval;
+  const lastTriggers = await getLastTriggerTimes();
+  const lastFired = lastTriggers[taskType] || 0;
+  const minGapMs = intervalMin * 60 * 1000 * 0.8; // 80% of interval as minimum gap
+
+  if (lastFired > 0 && (Date.now() - lastFired) < minGapMs) {
+    console.log(`[GreenBreathe] Skipping ${taskType}: only ${Math.round((Date.now() - lastFired) / 60000)}min since last, need ${intervalMin}min`);
+    return;
+  }
+
+  await setLastTriggerTime(taskType);
+  await triggerNotification(taskType);
 });
 
 // ─── Notification Trigger ───────────────────────────────────────────────────
@@ -222,7 +275,7 @@ function isQuietHours(quietHours: string[]): boolean {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'UPDATE_ALARM') {
-    setupAlarms().then(() => sendResponse({ success: true }));
+    resetAlarms().then(() => sendResponse({ success: true }));
     return true;
   }
 
