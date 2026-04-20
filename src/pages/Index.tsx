@@ -354,7 +354,12 @@ export default function Index() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
             {MBTI_LIST.map(m => {
               const gk = m[1] === 'N' ? (m[2] === 'T' ? 'NT' : 'NF') : (m[3] === 'J' ? 'SJ' : 'SP');
-              const groupLabels: Record<string, string> = { NT: '分析师', NF: '外交官', SJ: '守护者', SP: '探险家' };
+              const typeLabels: Record<string, string> = {
+                INTJ: '策略家', INTP: '逻辑学家', ENTJ: '指挥官', ENTP: '辩论家',
+                INFJ: '提倡者', INFP: '调停者', ENFJ: '主人公', ENFP: '竞选者',
+                ISTJ: '物流师', ISFJ: '守卫者', ESTJ: '总经理', ESFJ: '执政官',
+                ISTP: '鉴赏家', ISFP: '探险家', ESTP: '企业家', ESFP: '表演者',
+              };
               const gc = s.mbtiGroupColors[gk as keyof typeof s.mbtiGroupColors];
               return (
                 <div key={m} style={{
@@ -362,7 +367,7 @@ export default function Index() {
                   textAlign: 'center', transition: 'all 0.3s', cursor: 'default', backdropFilter: 'blur(10px)',
                 }}>
                   <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 2, marginBottom: 8, color: s.textPrimary }}>{m}</div>
-                  <div style={{ fontSize: 12, color: gc, fontWeight: 600, letterSpacing: 1 }}>{groupLabels[gk]}</div>
+                  <div style={{ fontSize: 12, color: gc, fontWeight: 600, letterSpacing: 1 }}>{typeLabels[m]}</div>
                   <p style={{ fontSize: 13, color: s.textTertiary, marginTop: 12, lineHeight: 1.6, margin: '12px 0 0' }}>
                     {MBTI_MESSAGES[m].hydration.length > 18 ? MBTI_MESSAGES[m].hydration.slice(0, 18) + '...' : MBTI_MESSAGES[m].hydration}
                   </p>
