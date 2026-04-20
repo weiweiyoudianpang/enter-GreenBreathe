@@ -20,6 +20,8 @@ const DEFAULT_PROFILE: UserProfile = {
   themeMode: 'auto',
   customBackgroundsDay: [],
   customBackgroundsNight: [],
+  inkDuration: 3,
+  cardDisplayDuration: 20,
 };
 
 // Storage API

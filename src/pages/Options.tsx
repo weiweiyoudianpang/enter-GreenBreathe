@@ -4,7 +4,7 @@ import '@/index.css';
 import { UserProfile, ThemeMode } from '@/types/extension';
 import { loadUserProfile, saveUserProfile } from '@/lib/storage';
 import { getTheme, resolveTheme, ThemeColors } from '@/lib/theme';
-import { Droplets, Eye, PersonStanding, User, Clock, Palette, Save, Play, ChevronDown, Plus, X, Volume2, Minimize2, ImagePlus, Lightbulb, Lock, Leaf, Sun, Moon, SunMoon } from 'lucide-react';
+import { Droplets, Eye, PersonStanding, User, Clock, Palette, Save, Play, ChevronDown, Plus, X, Volume2, Minimize2, ImagePlus, Lightbulb, Lock, Leaf, Sun, Moon, SunMoon, Timer, Paintbrush } from 'lucide-react';
 
 const defaultProfile: UserProfile = {
   nickname: '朋友', mbtiType: 'INFP', hydrationInterval: 45, eyeCareInterval: 20,
@@ -58,13 +58,14 @@ function getStyles(t: ThemeColors, isDay: boolean) {
   };
 }
 
-function CustomSlider({ value, onChange, color, t, isDay }: { value: number; onChange: (v: number) => void; color: string; t: ThemeColors; isDay: boolean }) {
+function CustomSlider({ value, onChange, color, t, isDay, min = 0, max = 120, step = 5 }: { value: number; onChange: (v: number) => void; color: string; t: ThemeColors; isDay: boolean; min?: number; max?: number; step?: number }) {
   const id = `slider-${color.replace('#', '')}`;
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
   return (
     <div style={{ position: 'relative', height: 32, display: 'flex', alignItems: 'center' }}>
       <div style={{ position: 'absolute', left: 0, right: 0, height: 6, borderRadius: 3, background: t.progressTrack }} />
-      <div style={{ position: 'absolute', left: 0, width: `${(value / 120) * 100}%`, height: 6, borderRadius: 3, background: `linear-gradient(90deg, ${color}, ${color}99)` }} />
-      <input type="range" min={0} max={120} step={5} value={value} onChange={(e) => onChange(Number(e.target.value))}
+      <div style={{ position: 'absolute', left: 0, width: `${pct}%`, height: 6, borderRadius: 3, background: `linear-gradient(90deg, ${color}, ${color}99)` }} />
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
         className={id}
         style={{ width: '100%', height: 6, borderRadius: 3, appearance: 'none', WebkitAppearance: 'none', background: 'transparent', outline: 'none', cursor: 'pointer', position: 'relative', zIndex: 1 }}
       />
@@ -324,6 +325,24 @@ function OptionsPage() {
               <ChevronDown size={18} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: t.textMuted, pointerEvents: 'none' }} />
             </div>
             <p style={s.hint}>根据你的屏幕大小选择合适的卡片尺寸</p>
+          </div>
+          {/* 水墨动画时长 */}
+          <div style={s.intervalBlock}>
+            <div style={s.intervalHeader}>
+              <div style={s.intervalLabel}><Paintbrush size={20} style={{ color: isDay ? '#8b5cf6' : '#a78bfa' }} />水墨晕开时长</div>
+              <span style={s.badge(isDay ? '#8b5cf6' : '#a78bfa')}>{profile.inkDuration ?? 3}秒{(profile.inkDuration ?? 3) === 0 ? '（关闭动画）' : ''}</span>
+            </div>
+            <CustomSlider value={profile.inkDuration ?? 3} onChange={(v) => setProfile({ ...profile, inkDuration: v })} color={isDay ? '#8b5cf6' : '#a78bfa'} t={t} isDay={isDay} min={0} max={10} />
+            <p style={s.hint}>控制背景图水墨晕开动画的时长，0秒表示关闭动画直接显示</p>
+          </div>
+          {/* 卡片存留时长 */}
+          <div style={s.intervalBlock}>
+            <div style={s.intervalHeader}>
+              <div style={s.intervalLabel}><Timer size={20} style={{ color: isDay ? '#ec4899' : '#f472b6' }} />卡片存留时长</div>
+              <span style={s.badge(isDay ? '#ec4899' : '#f472b6')}>{profile.cardDisplayDuration ?? 20}秒</span>
+            </div>
+            <CustomSlider value={profile.cardDisplayDuration ?? 20} onChange={(v) => setProfile({ ...profile, cardDisplayDuration: v })} color={isDay ? '#ec4899' : '#f472b6'} t={t} isDay={isDay} min={10} max={60} />
+            <p style={s.hint}>提醒卡片在屏幕上停留的时间，超时后自动关闭</p>
           </div>
           <div style={s.switchRow}>
             <div>

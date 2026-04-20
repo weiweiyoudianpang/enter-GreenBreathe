@@ -128,8 +128,10 @@ interface InkWashCanvasProps {
   bgColor?: string;
   /** Image URL for paint mode */
   imageSrc?: string;
-  /** Speed multiplier */
+  /** Speed multiplier (legacy, overridden by duration if set) */
   speed?: number;
+  /** Total animation duration in seconds (0 = instant, overrides speed) */
+  duration?: number;
   /** Called when fully revealed */
   onComplete?: () => void;
   style?: React.CSSProperties;
@@ -141,6 +143,7 @@ export default function InkWashCanvas({
   bgColor = '#0a1a28',
   imageSrc,
   speed = 1,
+  duration,
   onComplete,
   style,
 }: InkWashCanvasProps) {
@@ -165,15 +168,47 @@ export default function InkWashCanvas({
     if (!ctx) return;
     ctx.scale(dpr, dpr);
 
+    // Handle instant (0 duration)
+    if (duration !== undefined && duration <= 0) {
+      // Skip animation entirely
+      if (mode === 'paint' && imageSrc) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const imgRatio = img.width / img.height;
+          const canvasRatio = w / h;
+          let sx = 0, sy = 0, sw = img.width, sh = img.height;
+          if (imgRatio > canvasRatio) { sw = img.height * canvasRatio; sx = (img.width - sw) / 2; }
+          else { sh = img.width / canvasRatio; sy = (img.height - sh) / 2; }
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+          onComplete?.();
+        };
+        img.src = imageSrc;
+      } else {
+        ctx.clearRect(0, 0, w, h);
+        onComplete?.();
+      }
+      return;
+    }
+
+    // Compute effective speed from duration
+    // duration controls total animation time; speed is derived from it
+    let effectiveSpeed = speed;
+    if (duration !== undefined && duration > 0) {
+      // Base animation at speed=1 takes ~4 seconds. Scale accordingly.
+      effectiveSpeed = 4.0 / duration;
+    }
+
     let done = false;
     let animId = 0;
+    const maxTime = (duration !== undefined && duration > 0) ? duration * 1000 : 4000 / effectiveSpeed;
 
     if (mode === 'paint') {
       // ─── Paint mode: load image, draw through clip paths ───
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        const drops = createDrops(w, h, speed);
+        const drops = createDrops(w, h, effectiveSpeed);
         const t0 = performance.now();
 
         function frame(now: number) {
@@ -225,7 +260,7 @@ export default function InkWashCanvas({
           ctx!.restore();
           ctx!.globalAlpha = 1;
 
-          if (allDone || elapsed > 4000 / speed) {
+          if (allDone || elapsed > maxTime) {
             done = true;
             // Final full draw
             ctx!.clearRect(0, 0, w, h);
@@ -247,7 +282,7 @@ export default function InkWashCanvas({
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      const drops = createDrops(w, h, speed);
+      const drops = createDrops(w, h, effectiveSpeed);
       const t0 = performance.now();
 
       function frame(now: number) {
@@ -268,7 +303,7 @@ export default function InkWashCanvas({
           }
         }
 
-        if (allDone || elapsed > 4000 / speed) {
+        if (allDone || elapsed > maxTime) {
           done = true;
           ctx!.globalCompositeOperation = 'source-over';
           ctx!.clearRect(0, 0, w, h);
@@ -281,7 +316,7 @@ export default function InkWashCanvas({
     }
 
     return () => { done = true; cancelAnimationFrame(animId); };
-  }, [mode, bgColor, imageSrc, speed, onComplete]);
+  }, [mode, bgColor, imageSrc, speed, duration, onComplete]);
 
   return (
     <canvas

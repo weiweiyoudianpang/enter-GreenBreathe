@@ -33,6 +33,8 @@ export interface UserProfile {
   customBackgrounds?: string[];  // 兼容旧版
   customBackgroundsDay?: string[];   // 白天模式自定义背景
   customBackgroundsNight?: string[]; // 夜间模式自定义背景
+  inkDuration?: number;              // 水墨晕开动画时长（秒, 0-10, 默认3）
+  cardDisplayDuration?: number;      // 卡片存留时长（秒, 10-60, 默认20）
 }
 
 export interface InteractionLog {

@@ -136,7 +136,7 @@ function NotificationWindow() {
         {/* Layer 3: Canvas ink wash mask (covers image, gradually dissolves) */}
         <InkWashCanvas
           bgColor={inkBgColor}
-          speed={1}
+          duration={profile.inkDuration ?? 3}
           onComplete={handleInkComplete}
           style={{ zIndex: 2 }}
         />

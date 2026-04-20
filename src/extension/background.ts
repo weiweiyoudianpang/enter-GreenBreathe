@@ -79,7 +79,7 @@ async function triggerNotification(taskType: TaskType) {
   };
 
   // Primary: send to content script in active tab (transparent overlay)
-  const sent = await sendToContentScript(notificationData);
+  const sent = await sendToContentScript(notificationData, profile);
 
   // Fallback: standalone window (chrome:// pages, etc.)
   if (!sent) {
@@ -91,7 +91,7 @@ async function triggerNotification(taskType: TaskType) {
  * Try to send notification to content script in the active tab.
  * Returns true if successfully sent.
  */
-async function sendToContentScript(data: NotificationData): Promise<boolean> {
+async function sendToContentScript(data: NotificationData, profile: Awaited<ReturnType<typeof storage.getUserProfile>>): Promise<boolean> {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return false;
@@ -106,6 +106,8 @@ async function sendToContentScript(data: NotificationData): Promise<boolean> {
     const response = await chrome.tabs.sendMessage(tab.id, {
       type: 'SHOW_NOTIFICATION',
       data,
+      inkDuration: profile.inkDuration ?? 3,
+      cardDisplayDuration: profile.cardDisplayDuration ?? 20,
     });
     return response?.success === true;
   } catch {
@@ -152,10 +154,11 @@ async function showNotificationWindow(data: NotificationData, profile: Awaited<R
       left, top, focused: true,
     });
 
-    // Auto-close after 30s
+    // Auto-close after configured duration
+    const displayDuration = (profile.cardDisplayDuration ?? 20) * 1000;
     setTimeout(async () => {
       try { if (win.id) await chrome.windows.remove(win.id); } catch { /* already closed */ }
-    }, 30000);
+    }, displayDuration);
   } catch (error) {
     console.error('[GreenBreathe] Error creating notification window:', error);
   }

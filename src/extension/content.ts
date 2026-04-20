@@ -183,13 +183,13 @@ async function resolveNotificationTheme(): Promise<ThemeResult> {
 
 // ─── Show notification ──────────────────────────────────────────────────────
 
-async function showNotification(data: NotificationData, retryCount = 0) {
+async function showNotification(data: NotificationData, retryCount = 0, inkDuration = 3, cardDisplayDuration = 20) {
   if (shouldDelayNotification() && retryCount < 3) {
-    setTimeout(() => showNotification(data, retryCount + 1), 30000);
+    setTimeout(() => showNotification(data, retryCount + 1, inkDuration, cardDisplayDuration), 30000);
     return;
   }
   if (isUserActivelyInteracting() && retryCount === 0) {
-    setTimeout(() => showNotification(data, retryCount), 10000);
+    setTimeout(() => showNotification(data, retryCount, inkDuration, cardDisplayDuration), 10000);
     return;
   }
 
@@ -299,58 +299,70 @@ async function showNotification(data: NotificationData, retryCount = 0) {
       sy = (img.height - sh) / 2;
     }
 
-    const drops = createDrops(width, height, 1);
-    const t0 = performance.now();
-    let done = false;
+    // Compute animation speed from inkDuration setting
+    const effectiveSpeed = inkDuration > 0 ? 4.0 / inkDuration : 999;
+    const maxAnimTime = inkDuration > 0 ? inkDuration * 1000 : 0;
 
-    function frame(now: number) {
-      if (done) return;
-      const elapsed = now - t0;
-      const allDone = stepDrops(drops, elapsed, width, height);
-
-      ctx!.clearRect(0, 0, width, height);
-
-      // Draw image through blob clip paths
-      ctx!.save();
-      ctx!.beginPath();
-      for (const d of drops) {
-        if (d.r > 1) traceBlobPath(ctx!, d.x, d.y, d.r, d.phase, d.wobble, elapsed);
-        for (const s of d.subs) {
-          if (s.r > 1) traceBlobPath(ctx!, s.x, s.y, s.r, s.phase, s.wobble, elapsed);
-        }
-      }
-      ctx!.clip();
+    if (inkDuration <= 0) {
+      // Instant: skip animation, show image immediately
       ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
-      ctx!.restore();
+      contentBox.style.opacity = '1';
+      contentBox.style.transform = 'translateY(0)';
+      contentBox.style.filter = 'blur(0)';
+    } else {
+      const drops = createDrops(width, height, effectiveSpeed);
+      const t0 = performance.now();
+      let done = false;
 
-      // Soft feathered edge
-      ctx!.globalAlpha = 0.12;
-      ctx!.save();
-      ctx!.beginPath();
-      for (const d of drops) {
-        if (d.r > 1) traceBlobPath(ctx!, d.x, d.y, d.r * 1.12, d.phase, d.wobble, elapsed);
-        for (const s of d.subs) {
-          if (s.r > 1) traceBlobPath(ctx!, s.x, s.y, s.r * 1.15, s.phase, s.wobble, elapsed);
-        }
-      }
-      ctx!.clip();
-      ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
-      ctx!.restore();
-      ctx!.globalAlpha = 1;
+      function frame(now: number) {
+        if (done) return;
+        const elapsed = now - t0;
+        const allDone = stepDrops(drops, elapsed, width, height);
 
-      if (allDone || elapsed > 4000) {
-        done = true;
         ctx!.clearRect(0, 0, width, height);
+
+        // Draw image through blob clip paths
+        ctx!.save();
+        ctx!.beginPath();
+        for (const d of drops) {
+          if (d.r > 1) traceBlobPath(ctx!, d.x, d.y, d.r, d.phase, d.wobble, elapsed);
+          for (const s of d.subs) {
+            if (s.r > 1) traceBlobPath(ctx!, s.x, s.y, s.r, s.phase, s.wobble, elapsed);
+          }
+        }
+        ctx!.clip();
         ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
-        // Show content
-        contentBox.style.opacity = '1';
-        contentBox.style.transform = 'translateY(0)';
-        contentBox.style.filter = 'blur(0)';
-        return;
+        ctx!.restore();
+
+        // Soft feathered edge
+        ctx!.globalAlpha = 0.12;
+        ctx!.save();
+        ctx!.beginPath();
+        for (const d of drops) {
+          if (d.r > 1) traceBlobPath(ctx!, d.x, d.y, d.r * 1.12, d.phase, d.wobble, elapsed);
+          for (const s of d.subs) {
+            if (s.r > 1) traceBlobPath(ctx!, s.x, s.y, s.r * 1.15, s.phase, s.wobble, elapsed);
+          }
+        }
+        ctx!.clip();
+        ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+        ctx!.restore();
+        ctx!.globalAlpha = 1;
+
+        if (allDone || elapsed > maxAnimTime) {
+          done = true;
+          ctx!.clearRect(0, 0, width, height);
+          ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+          // Show content
+          contentBox.style.opacity = '1';
+          contentBox.style.transform = 'translateY(0)';
+          contentBox.style.filter = 'blur(0)';
+          return;
+        }
+        requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
   };
   img.onerror = () => {
     contentBox.style.opacity = '1';
@@ -371,10 +383,10 @@ async function showNotification(data: NotificationData, retryCount = 0) {
   };
   dismissBtn?.addEventListener('click', dismiss);
 
-  // Auto-dismiss after 12 seconds
+  // Auto-dismiss after configured display duration
   setTimeout(() => {
     if (wrapper.parentElement) dismiss();
-  }, 12000);
+  }, cardDisplayDuration * 1000);
 }
 
 // ─── Interaction logging ────────────────────────────────────────────────────
@@ -403,7 +415,7 @@ async function logInteraction(action: 'completed' | 'dismissed', taskType: strin
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'SHOW_NOTIFICATION') {
-    showNotification(message.data)
+    showNotification(message.data, 0, message.inkDuration, message.cardDisplayDuration)
       .then(() => sendResponse({ success: true }))
       .catch((error) => sendResponse({ success: false, error: error.message }));
     return true;
