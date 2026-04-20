@@ -1,6 +1,14 @@
 // Content Script - Injects transparent ink-wash notification into web pages
 import { NotificationData } from '@/types/extension';
 
+// Guard against duplicate injection
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if ((window as any).__greenBreatheContentLoaded) {
+  console.log('[GreenBreathe Content] Already loaded, skipping duplicate');
+} else {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__greenBreatheContentLoaded = true;
+
 console.log('[GreenBreathe Content] Script loaded on:', window.location.href);
 
 // ─── Ink Wash Canvas Engine (pure JS, no React) ─────────────────────────────
@@ -444,3 +452,5 @@ style.textContent = `
 document.head.appendChild(style);
 
 console.log('[GreenBreathe Content] Script ready');
+
+} // end duplicate guard

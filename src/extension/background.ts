@@ -89,7 +89,10 @@ async function triggerNotification(taskType: TaskType) {
 
 /**
  * Try to send notification to content script in the active tab.
- * Returns true if successfully sent.
+ * Uses a 3-step approach for maximum reliability:
+ * 1. Try messaging the existing content script
+ * 2. If that fails, programmatically inject the content script
+ * 3. Try messaging again after injection
  */
 async function sendToContentScript(data: NotificationData, profile: Awaited<ReturnType<typeof storage.getUserProfile>>): Promise<boolean> {
   try {
@@ -99,19 +102,48 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
     // Skip chrome:// and other restricted pages
     const url = tab.url || '';
     if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
-        url.startsWith('about:') || url.startsWith('edge://')) {
+        url.startsWith('about:') || url.startsWith('edge://') ||
+        url.startsWith('devtools://') || url.startsWith('view-source:')) {
       return false;
     }
 
-    const response = await chrome.tabs.sendMessage(tab.id, {
+    const msg = {
       type: 'SHOW_NOTIFICATION',
       data,
       inkDuration: profile.inkDuration ?? 3,
       cardDisplayDuration: profile.cardDisplayDuration ?? 20,
-    });
-    return response?.success === true;
+    };
+
+    // Step 1: Try sending to existing content script
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, msg);
+      if (response?.success === true) return true;
+    } catch {
+      console.log('[GreenBreathe] Content script not loaded, injecting...');
+    }
+
+    // Step 2: Programmatically inject content script
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js'],
+      });
+    } catch (injectError) {
+      console.log('[GreenBreathe] Cannot inject content script:', injectError);
+      return false;
+    }
+
+    // Step 3: Wait for script to initialize, then retry message
+    await new Promise(resolve => setTimeout(resolve, 300));
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, msg);
+      return response?.success === true;
+    } catch {
+      console.log('[GreenBreathe] Content script injected but message failed');
+      return false;
+    }
   } catch {
-    console.log('[GreenBreathe] Content script not available, using window fallback');
+    console.log('[GreenBreathe] sendToContentScript error, using window fallback');
     return false;
   }
 }
