@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Droplets, Eye, PersonStanding, Play, Leaf, Clock, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
+import { Droplets, Eye, PersonStanding, Play, Leaf, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
 import { getTheme, resolveTheme, defaultBackgrounds, ThemeColors } from '@/lib/theme';
 import { ThemeMode } from '@/types/extension';
 
@@ -65,9 +65,6 @@ function getPageStyles(t: ThemeColors, isDay: boolean) {
   const heroOverlay = isDay
     ? 'linear-gradient(180deg, rgba(240,253,244,0.88) 0%, rgba(240,253,244,0.65) 50%, rgba(240,253,244,0.95) 100%)'
     : 'linear-gradient(180deg, rgba(10,30,46,0.85) 0%, rgba(10,30,46,0.6) 50%, rgba(10,30,46,0.95) 100%)';
-  const heroGradient = isDay
-    ? `linear-gradient(135deg, #064e3b 0%, ${accentColor} 100%)`
-    : 'linear-gradient(135deg, #ffffff 0%, #38c9a3 100%)';
   const ctaBtnBg = isDay
     ? 'linear-gradient(135deg, #10b981, #059669)'
     : 'linear-gradient(135deg, #38c9a3, #2eb391)';
@@ -108,26 +105,72 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
   const t = getTheme(themeMode);
   const bgFiles = defaultBackgrounds[effectiveTheme];
   const bgImage = useMemo(() => `/images/${effectiveTheme}/${bgFiles[Math.floor(Math.random() * bgFiles.length)]}`, [visible, effectiveTheme]);
+  const isNight = effectiveTheme === 'night';
+
+  // Ink drop positions for progressive reveal mask
+  const inkDropPositions = [
+    { x: 35, y: 25 }, { x: 65, y: 40 }, { x: 20, y: 60 },
+    { x: 80, y: 30 }, { x: 50, y: 70 }, { x: 15, y: 35 }, { x: 75, y: 65 },
+  ];
+  const maskLayers = inkDropPositions.map(d =>
+    `radial-gradient(circle at ${d.x}% ${d.y}%, black 0%, black 100%, transparent 100%)`
+  ).join(', ');
+  const maskPos = inkDropPositions.map(d => `${d.x}% ${d.y}%`).join(', ');
 
   return (
     <div style={{ position: 'fixed', top: 32, right: 32, zIndex: 9999, pointerEvents: 'none' }}>
       <style>{`
-        @keyframes inkWashSpread { 0% { opacity:0; filter:blur(30px) contrast(1.2) brightness(1.2); transform:scale(1.05); } 40% { opacity:0.6; filter:blur(15px) contrast(1.1) brightness(1.1); } 100% { opacity:1; filter:blur(0) contrast(1) brightness(1); transform:scale(1); } }
-        @keyframes inkWashText { 0% { opacity:0; filter:blur(12px); transform:translateY(10px); } 40% { opacity:0; filter:blur(12px); transform:translateY(10px); } 100% { opacity:1; filter:blur(0); transform:translateY(0); } }
-        .ink-wash-card { animation: inkWashSpread 2.5s cubic-bezier(0.22,1,0.36,1) forwards; }
-        .ink-wash-content { animation: inkWashText 2.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+        @keyframes demoInkReveal {
+          0%   { mask-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; -webkit-mask-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+          10%  { mask-size: 45% 45%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; -webkit-mask-size: 45% 45%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+          20%  { mask-size: 70% 70%, 35% 35%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; -webkit-mask-size: 70% 70%, 35% 35%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+          30%  { mask-size: 90% 90%, 65% 65%, 40% 40%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; -webkit-mask-size: 90% 90%, 65% 65%, 40% 40%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+          40%  { mask-size: 110% 110%, 85% 85%, 70% 70%, 45% 45%, 0% 0%, 0% 0%, 0% 0%; -webkit-mask-size: 110% 110%, 85% 85%, 70% 70%, 45% 45%, 0% 0%, 0% 0%, 0% 0%; }
+          55%  { mask-size: 140% 140%, 110% 110%, 95% 95%, 80% 80%, 55% 55%, 35% 35%, 0% 0%; -webkit-mask-size: 140% 140%, 110% 110%, 95% 95%, 80% 80%, 55% 55%, 35% 35%, 0% 0%; }
+          70%  { mask-size: 170% 170%, 140% 140%, 120% 120%, 110% 110%, 90% 90%, 70% 70%, 50% 50%; -webkit-mask-size: 170% 170%, 140% 140%, 120% 120%, 110% 110%, 90% 90%, 70% 70%, 50% 50%; }
+          85%  { mask-size: 200% 200%, 180% 180%, 160% 160%, 150% 150%, 130% 130%, 110% 110%, 90% 90%; -webkit-mask-size: 200% 200%, 180% 180%, 160% 160%, 150% 150%, 130% 130%, 110% 110%, 90% 90%; }
+          100% { mask-size: 250% 250%, 220% 220%, 200% 200%, 200% 200%, 180% 180%, 160% 160%, 150% 150%; -webkit-mask-size: 250% 250%, 220% 220%, 200% 200%, 200% 200%, 180% 180%, 160% 160%, 150% 150%; }
+        }
+        @keyframes demoCardEnter {
+          0% { transform: scale(0.97); filter: brightness(0.7); }
+          100% { transform: scale(1); filter: brightness(1); }
+        }
+        @keyframes demoContentFade {
+          0% { opacity: 0; filter: blur(10px); transform: translateY(12px); }
+          55% { opacity: 0; filter: blur(10px); transform: translateY(12px); }
+          100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
+        .demo-card-enter { animation: demoCardEnter 2.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .demo-bg-reveal {
+          animation: demoInkReveal 3s cubic-bezier(0.16,1,0.3,1) forwards;
+          mask-image: ${maskLayers};
+          -webkit-mask-image: ${maskLayers};
+          mask-position: ${maskPos};
+          -webkit-mask-position: ${maskPos};
+          mask-repeat: no-repeat;
+          -webkit-mask-repeat: no-repeat;
+          mask-composite: add;
+          -webkit-mask-composite: source-over;
+        }
+        .demo-content-fade { animation: demoContentFade 3s cubic-bezier(0.22,1,0.36,1) forwards; }
       `}</style>
-      <div className={visible ? 'ink-wash-card' : ''} style={{
+      <div className={visible ? 'demo-card-enter' : ''} style={{
         width, height, borderRadius: 24, boxShadow: '0 30px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.15)', fontFamily: FONT,
-        opacity: visible ? 1 : 0, filter: visible ? 'blur(0)' : 'blur(10px)', transform: visible ? 'scale(1)' : 'scale(0.95)',
-        pointerEvents: 'none', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        backgroundImage: `url('${bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center',
-        visibility: visible ? 'visible' : 'hidden', transition: 'visibility 2.5s, opacity 1.5s cubic-bezier(0.22,1,0.36,1), filter 1.5s, transform 1.5s',
+        opacity: visible ? 1 : 0, pointerEvents: 'none', position: 'relative', overflow: 'hidden',
+        visibility: visible ? 'visible' : 'hidden', transition: 'visibility 0.3s, opacity 0.3s',
       }}>
-        <div className={visible ? 'ink-wash-content' : ''} style={{
-          position: 'relative', zIndex: 1, width: '100%', height: '30%', padding: '40px 60px',
+        {/* Base color layer */}
+        <div style={{ position: 'absolute', inset: 0, background: isNight ? '#0a1a28' : '#e8f0e4' }} />
+        {/* Image layer with ink wash mask */}
+        <div className={visible ? 'demo-bg-reveal' : ''} style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url('${bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center',
+        }} />
+        {/* Content */}
+        <div className={visible ? 'demo-content-fade' : ''} style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', padding: '40px 60px',
           background: t.notifContentBg, backdropFilter: 'blur(28px) saturate(150%)', WebkitBackdropFilter: 'blur(28px) saturate(150%)',
-          borderTop: t.notifContentBorder, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          borderTop: t.notifContentBorder, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1,
         }}>
           <p style={{ fontSize: 32, lineHeight: 1.5, marginBottom: 16, fontWeight: 600, letterSpacing: 1, color: t.notifTitle }}>{message}</p>
           <p style={{ fontSize: 20, color: t.notifSubtitle, marginBottom: 24, lineHeight: 1.5, fontWeight: 500 }}>{task.instruction}</p>
@@ -222,7 +265,7 @@ export default function Index() {
         <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: s.glowOrb2, filter: 'blur(60px)', transition: 'background 0.6s' }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 800, padding: '0 24px' }}>
-          <h1 style={{ fontSize: 64, fontWeight: 800, margin: '0 0 20px', letterSpacing: 6, lineHeight: 1.2, background: s.heroGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', transition: 'all 0.6s' }}>
+          <h1 style={{ fontSize: 64, fontWeight: 800, margin: '0 0 20px', letterSpacing: 6, lineHeight: 1.2, color: isDay ? '#064e3b' : '#ffffff', transition: 'color 0.6s' }}>
             青植呼吸
           </h1>
           <p style={{ fontSize: 22, color: s.textSecondary, margin: '0 0 12px', letterSpacing: 3, fontWeight: 300, transition: 'color 0.6s' }}>
