@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { Droplets, Eye, PersonStanding, Play, Leaf, X, Clock, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
-import { getTheme, resolveTheme, defaultBackgrounds } from '@/lib/theme';
+import { useState, useCallback, useMemo } from 'react';
+import { Droplets, Eye, PersonStanding, Play, Leaf, Clock, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
+import { getTheme, resolveTheme, defaultBackgrounds, ThemeColors } from '@/lib/theme';
 import { ThemeMode } from '@/types/extension';
 
 // ─── 数据 ─────────────────────────────────────────────────────────────────────
@@ -43,6 +43,56 @@ const MBTI_LIST: MbtiType[] = [
 
 const FONT = "'Microsoft YaHei', 'PingFang SC', sans-serif";
 
+// ─── Theme-aware style helpers ──────────────────────────────────────────────
+
+function getPageStyles(t: ThemeColors, isDay: boolean) {
+  const textPrimary = isDay ? '#064e3b' : '#ffffff';
+  const textSecondary = isDay ? 'rgba(6,78,59,0.6)' : 'rgba(255,255,255,0.5)';
+  const textTertiary = isDay ? 'rgba(6,78,59,0.4)' : 'rgba(255,255,255,0.35)';
+  const cardBg = isDay ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.04)';
+  const cardBorder = isDay ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.08)';
+  const controlBg = isDay ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.04)';
+  const controlBorder = isDay ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)';
+  const accentColor = isDay ? '#059669' : '#38c9a3';
+  const activeBg = isDay ? 'rgba(16,185,129,0.12)' : 'rgba(56,201,163,0.12)';
+  const activeBorder = isDay ? 'rgba(16,185,129,0.5)' : 'rgba(56,201,163,0.6)';
+  const inactiveText = isDay ? 'rgba(6,78,59,0.5)' : 'rgba(255,255,255,0.45)';
+  const sectionBg1 = isDay ? 'linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%)' : 'linear-gradient(180deg, #0a1e2e 0%, #0d2a3d 100%)';
+  const sectionBg2 = isDay ? '#ecfdf5' : '#0d2a3d';
+  const sectionBg3 = isDay ? 'linear-gradient(180deg, #ecfdf5 0%, #f0fdf4 100%)' : 'linear-gradient(180deg, #0d2a3d 0%, #0a1e2e 100%)';
+  const pageBg = isDay ? '#f0fdf4' : '#0a1e2e';
+  const footerBg = isDay ? '#e6f7ed' : '#081620';
+  const heroOverlay = isDay
+    ? 'linear-gradient(180deg, rgba(240,253,244,0.88) 0%, rgba(240,253,244,0.65) 50%, rgba(240,253,244,0.95) 100%)'
+    : 'linear-gradient(180deg, rgba(10,30,46,0.85) 0%, rgba(10,30,46,0.6) 50%, rgba(10,30,46,0.95) 100%)';
+  const heroGradient = isDay
+    ? `linear-gradient(135deg, #064e3b 0%, ${accentColor} 100%)`
+    : 'linear-gradient(135deg, #ffffff 0%, #38c9a3 100%)';
+  const ctaBtnBg = isDay
+    ? 'linear-gradient(135deg, #10b981, #059669)'
+    : 'linear-gradient(135deg, #38c9a3, #2eb391)';
+  const ctaBtnShadow = isDay ? '0 8px 32px rgba(16,185,129,0.3)' : '0 8px 32px rgba(56,201,163,0.4)';
+  const ghostBtnBg = isDay ? 'rgba(6,78,59,0.06)' : 'rgba(255,255,255,0.08)';
+  const ghostBtnBorder = isDay ? 'rgba(6,78,59,0.15)' : 'rgba(255,255,255,0.2)';
+  const ghostBtnColor = isDay ? 'rgba(6,78,59,0.8)' : 'rgba(255,255,255,0.9)';
+  const glowOrb1 = isDay ? 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(56,201,163,0.15) 0%, transparent 70%)';
+  const glowOrb2 = isDay ? 'radial-gradient(circle, rgba(5,150,105,0.08) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(59,158,222,0.12) 0%, transparent 70%)';
+  const topLine = isDay ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.08)';
+  const decorLine = isDay ? `linear-gradient(90deg, transparent, ${accentColor}50, transparent)` : 'linear-gradient(90deg, transparent, rgba(56,201,163,0.3), transparent)';
+  const mbtiGroupColors = isDay
+    ? { NT: '#6d49b0', NF: '#059669', SJ: '#2b7fc2', SP: '#c07f20' }
+    : { NT: '#7c5cbf', NF: '#38c9a3', SJ: '#3b9ede', SP: '#e8a838' };
+
+  return {
+    textPrimary, textSecondary, textTertiary, cardBg, cardBorder, controlBg, controlBorder,
+    accentColor, activeBg, activeBorder, inactiveText,
+    sectionBg1, sectionBg2, sectionBg3, pageBg, footerBg,
+    heroOverlay, heroGradient, ctaBtnBg, ctaBtnShadow,
+    ghostBtnBg, ghostBtnBorder, ghostBtnColor,
+    glowOrb1, glowOrb2, topLine, decorLine, mbtiGroupColors,
+  };
+}
+
 // ─── 提醒卡片预览（缩小版） ───────────────────────────────────────────────────
 
 function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = 'medium', themeMode = 'auto' }: {
@@ -51,13 +101,13 @@ function MiniNotificationCard({ taskType, mbti, visible, onDismiss, cardSize = '
   const task = TASK_INFO[taskType];
   const message = MBTI_MESSAGES[mbti]?.[taskType] ?? MBTI_MESSAGES.INFP[taskType];
   const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
-  const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
+  const randomAction = useMemo(() => actionTexts[Math.floor(Math.random() * actionTexts.length)], [visible]);
   const sizeMap = { small: { width: 960, height: 570 }, medium: { width: 1280, height: 760 }, large: { width: 1600, height: 950 } };
   const { width, height } = sizeMap[cardSize];
   const effectiveTheme = resolveTheme(themeMode);
   const t = getTheme(themeMode);
   const bgFiles = defaultBackgrounds[effectiveTheme];
-  const bgImage = `/images/${effectiveTheme}/${bgFiles[Math.floor(Math.random() * bgFiles.length)]}`;
+  const bgImage = useMemo(() => `/images/${effectiveTheme}/${bgFiles[Math.floor(Math.random() * bgFiles.length)]}`, [visible, effectiveTheme]);
 
   return (
     <div style={{ position: 'fixed', top: 32, right: 32, zIndex: 9999, pointerEvents: 'none' }}>
@@ -106,6 +156,11 @@ export default function Index() {
   const [currentCardSize, setCurrentCardSize] = useState<CardSize>('medium');
   const [currentThemeMode, setCurrentThemeMode] = useState<ThemeMode>('auto');
 
+  const effectiveTheme = resolveTheme(themeMode);
+  const isDay = effectiveTheme === 'day';
+  const t = getTheme(themeMode);
+  const s = getPageStyles(t, isDay);
+
   const triggerNotification = useCallback(() => {
     setCurrentTask(selectedTask);
     setCurrentMbti(selectedMbti);
@@ -130,62 +185,82 @@ export default function Index() {
   ];
 
   return (
-    <div style={{ fontFamily: FONT, background: '#0a1e2e', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+    <div style={{ fontFamily: FONT, background: s.pageBg, color: s.textPrimary, minHeight: '100vh', overflowX: 'hidden', transition: 'background 0.6s, color 0.6s' }}>
       {/* 通知卡片 */}
       <MiniNotificationCard taskType={currentTask} mbti={currentMbti} visible={notifVisible} onDismiss={() => setNotifVisible(false)} cardSize={currentCardSize} themeMode={currentThemeMode} />
 
+      {/* ── 全局主题切换浮动按钮 ── */}
+      <div style={{
+        position: 'fixed', top: 20, right: 20, zIndex: 100, display: 'flex', gap: 4,
+        background: isDay ? 'rgba(255,255,255,0.85)' : 'rgba(10,30,46,0.85)',
+        backdropFilter: 'blur(16px)', borderRadius: 100, padding: 4,
+        border: `1px solid ${s.cardBorder}`, boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        transition: 'all 0.4s',
+      }}>
+        {([
+          { mode: 'day' as ThemeMode, icon: <Sun size={16} /> },
+          { mode: 'auto' as ThemeMode, icon: <SunMoon size={16} /> },
+          { mode: 'night' as ThemeMode, icon: <Moon size={16} /> },
+        ]).map(item => (
+          <button key={item.mode} onClick={() => setThemeMode(item.mode)} style={{
+            width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: 'pointer', transition: 'all 0.3s',
+            background: themeMode === item.mode ? s.activeBg : 'transparent',
+            color: themeMode === item.mode ? s.accentColor : s.inactiveText,
+          }}>
+            {item.icon}
+          </button>
+        ))}
+      </div>
+
       {/* ───── Hero Section ───── */}
       <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        {/* 背景图 + 遮罩 */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/images/bg-options.png')", backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,30,46,0.85) 0%, rgba(10,30,46,0.6) 50%, rgba(10,30,46,0.95) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/images/bg-options.png')", backgroundSize: 'cover', backgroundPosition: 'center', transition: 'opacity 0.6s', opacity: isDay ? 0.3 : 1 }} />
+        <div style={{ position: 'absolute', inset: 0, background: s.heroOverlay, transition: 'background 0.6s' }} />
 
-        {/* 装饰光晕 */}
-        <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,201,163,0.15) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,158,222,0.12) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: 600, height: 600, borderRadius: '50%', background: s.glowOrb1, filter: 'blur(60px)', transition: 'background 0.6s' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: s.glowOrb2, filter: 'blur(60px)', transition: 'background 0.6s' }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 800, padding: '0 24px' }}>
-          <h1 style={{ fontSize: 64, fontWeight: 800, margin: '0 0 20px', letterSpacing: 6, lineHeight: 1.2, background: 'linear-gradient(135deg, #ffffff 0%, #38c9a3 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <h1 style={{ fontSize: 64, fontWeight: 800, margin: '0 0 20px', letterSpacing: 6, lineHeight: 1.2, background: s.heroGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', transition: 'all 0.6s' }}>
             青植呼吸
           </h1>
-          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.7)', margin: '0 0 12px', letterSpacing: 3, fontWeight: 300 }}>
+          <p style={{ fontSize: 22, color: s.textSecondary, margin: '0 0 12px', letterSpacing: 3, fontWeight: 300, transition: 'color 0.6s' }}>
             GreenBreathe
           </p>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', margin: '0 0 48px', lineHeight: 1.8, maxWidth: 560, marginInline: 'auto' }}>
+          <p style={{ fontSize: 18, color: s.textTertiary, margin: '0 0 48px', lineHeight: 1.8, maxWidth: 560, marginInline: 'auto', transition: 'color 0.6s' }}>
             在快节奏的数字生活中，为你提供片刻的宁静。基于 MBTI 性格的极简健康提醒，通过水墨晕开动画与专属文案，温柔地陪伴你的每一天。
           </p>
 
-          {/* CTA 按钮 */}
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="#demo" style={{
-              padding: '16px 48px', background: 'linear-gradient(135deg, #38c9a3, #2eb391)', borderRadius: 100, fontSize: 18, color: '#fff',
-              textDecoration: 'none', fontWeight: 600, letterSpacing: 2, boxShadow: '0 8px 32px rgba(56,201,163,0.4)', transition: 'all 0.3s',
+              padding: '16px 48px', background: s.ctaBtnBg, borderRadius: 100, fontSize: 18, color: '#fff',
+              textDecoration: 'none', fontWeight: 600, letterSpacing: 2, boxShadow: s.ctaBtnShadow, transition: 'all 0.3s',
             }}>
               体验演示
             </a>
             <a href="#features" style={{
-              padding: '16px 48px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 100, fontSize: 18, color: 'rgba(255,255,255,0.9)', textDecoration: 'none', fontWeight: 500, letterSpacing: 2, transition: 'all 0.3s',
+              padding: '16px 48px', background: s.ghostBtnBg, border: `1px solid ${s.ghostBtnBorder}`,
+              borderRadius: 100, fontSize: 18, color: s.ghostBtnColor, textDecoration: 'none', fontWeight: 500, letterSpacing: 2, transition: 'all 0.3s',
             }}>
               了解更多
             </a>
           </div>
         </div>
 
-        {/* 向下滚动指示 */}
-        <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', opacity: 0.4, animation: 'bounce 2s infinite' }}>
+        <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', opacity: 0.4, animation: 'bounce 2s infinite', color: s.textPrimary }}>
           <ChevronDown size={32} />
         </div>
         <style>{`@keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(10px); } }`}</style>
       </section>
 
       {/* ───── Features Section ───── */}
-      <section id="features" style={{ padding: '120px 24px', background: 'linear-gradient(180deg, #0a1e2e 0%, #0d2a3d 100%)' }}>
+      <section id="features" style={{ padding: '120px 24px', background: s.sectionBg1, transition: 'background 0.6s' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 80 }}>
-            <p style={{ fontSize: 14, color: '#38c9a3', letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Core Features</p>
-            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2 }}>三大核心关怀</h2>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.5)', maxWidth: 500, margin: '0 auto', lineHeight: 1.8 }}>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Core Features</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary, transition: 'color 0.6s' }}>三大核心关怀</h2>
+            <p style={{ fontSize: 17, color: s.textSecondary, maxWidth: 500, margin: '0 auto', lineHeight: 1.8 }}>
               科学研究表明，定时休息能显著提升工作效率和身心健康
             </p>
           </div>
@@ -195,16 +270,16 @@ export default function Index() {
               const Icon = f.icon;
               return (
                 <div key={i} style={{
-                  padding: '48px 36px', borderRadius: 24, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  padding: '48px 36px', borderRadius: 24, background: s.cardBg, border: `1px solid ${s.cardBorder}`,
                   transition: 'all 0.4s', cursor: 'default', position: 'relative', overflow: 'hidden',
+                  backdropFilter: 'blur(10px)',
                 }}>
-                  {/* 顶部装饰线 */}
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${f.color}, transparent)`, opacity: 0.6 }} />
                   <div style={{ width: 64, height: 64, borderRadius: 20, background: `${f.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28 }}>
                     <Icon size={32} style={{ color: f.color }} />
                   </div>
-                  <h3 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 16px', letterSpacing: 1 }}>{f.title}</h3>
-                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
+                  <h3 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 16px', letterSpacing: 1, color: s.textPrimary }}>{f.title}</h3>
+                  <p style={{ fontSize: 15, color: s.textSecondary, lineHeight: 1.8, margin: 0 }}>{f.desc}</p>
                 </div>
               );
             })}
@@ -213,14 +288,13 @@ export default function Index() {
       </section>
 
       {/* ───── Highlights Section ───── */}
-      <section style={{ padding: '120px 24px', background: '#0d2a3d', position: 'relative' }}>
-        {/* 装饰 */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,201,163,0.04) 0%, transparent 70%)' }} />
+      <section style={{ padding: '120px 24px', background: s.sectionBg2, position: 'relative', transition: 'background 0.6s' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: s.glowOrb1 }} />
 
         <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center', marginBottom: 80 }}>
-            <p style={{ fontSize: 14, color: '#38c9a3', letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Why GreenBreathe</p>
-            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2 }}>为什么选择青植呼吸</h2>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Why GreenBreathe</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>为什么选择青植呼吸</h2>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
@@ -228,15 +302,15 @@ export default function Index() {
               const Icon = h.icon;
               return (
                 <div key={i} style={{
-                  padding: '36px 40px', borderRadius: 20, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                  display: 'flex', gap: 24, alignItems: 'flex-start', transition: 'all 0.3s',
+                  padding: '36px 40px', borderRadius: 20, background: s.cardBg, border: `1px solid ${s.cardBorder}`,
+                  display: 'flex', gap: 24, alignItems: 'flex-start', transition: 'all 0.3s', backdropFilter: 'blur(10px)',
                 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(56,201,163,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon size={24} style={{ color: '#38c9a3' }} />
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: `${s.accentColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={24} style={{ color: s.accentColor }} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 10px', letterSpacing: 1 }}>{h.title}</h3>
-                    <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>{h.desc}</p>
+                    <h3 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 10px', letterSpacing: 1, color: s.textPrimary }}>{h.title}</h3>
+                    <p style={{ fontSize: 15, color: s.textSecondary, lineHeight: 1.7, margin: 0 }}>{h.desc}</p>
                   </div>
                 </div>
               );
@@ -246,35 +320,29 @@ export default function Index() {
       </section>
 
       {/* ───── MBTI Preview Section ───── */}
-      <section style={{ padding: '120px 24px', background: 'linear-gradient(180deg, #0d2a3d 0%, #0a1e2e 100%)' }}>
+      <section style={{ padding: '120px 24px', background: s.sectionBg3, transition: 'background 0.6s' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <p style={{ fontSize: 14, color: '#38c9a3', letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Personality Driven</p>
-            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2 }}>MBTI 性格驱动</h2>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.5)', maxWidth: 540, margin: '0 auto', lineHeight: 1.8 }}>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Personality Driven</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>MBTI 性格驱动</h2>
+            <p style={{ fontSize: 17, color: s.textSecondary, maxWidth: 540, margin: '0 auto', lineHeight: 1.8 }}>
               16种性格类型，每种都有独特的鼓励方式。不再是千篇一律的提醒，而是真正懂你的温柔关怀。
             </p>
           </div>
 
-          {/* MBTI 性格卡片网格 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
             {MBTI_LIST.map(m => {
-              const groups: Record<string, { label: string; color: string }> = {
-                NT: { label: '分析师', color: '#7c5cbf' }, NF: { label: '外交官', color: '#38c9a3' },
-                SJ: { label: '守护者', color: '#3b9ede' }, SP: { label: '探险家', color: '#e8a838' },
-              };
-              const groupKey = (m.includes('N') ? 'N' : 'S') + (m.includes('T') ? 'T' : (m.includes('F') ? (m.includes('N') ? 'F' : 'J') : 'J'));
-              // Simplify: NT, NF, SJ, SP
               const gk = m[1] === 'N' ? (m[2] === 'T' ? 'NT' : 'NF') : (m[3] === 'J' ? 'SJ' : 'SP');
-              const group = groups[gk];
+              const groupLabels: Record<string, string> = { NT: '分析师', NF: '外交官', SJ: '守护者', SP: '探险家' };
+              const gc = s.mbtiGroupColors[gk as keyof typeof s.mbtiGroupColors];
               return (
                 <div key={m} style={{
-                  padding: '20px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                  textAlign: 'center', transition: 'all 0.3s', cursor: 'default',
+                  padding: '20px 24px', borderRadius: 16, background: s.cardBg, border: `1px solid ${s.cardBorder}`,
+                  textAlign: 'center', transition: 'all 0.3s', cursor: 'default', backdropFilter: 'blur(10px)',
                 }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 2, marginBottom: 8 }}>{m}</div>
-                  <div style={{ fontSize: 12, color: group.color, fontWeight: 600, letterSpacing: 1 }}>{group.label}</div>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12, lineHeight: 1.6, margin: '12px 0 0' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 2, marginBottom: 8, color: s.textPrimary }}>{m}</div>
+                  <div style={{ fontSize: 12, color: gc, fontWeight: 600, letterSpacing: 1 }}>{groupLabels[gk]}</div>
+                  <p style={{ fontSize: 13, color: s.textTertiary, marginTop: 12, lineHeight: 1.6, margin: '12px 0 0' }}>
                     {MBTI_MESSAGES[m].hydration.length > 18 ? MBTI_MESSAGES[m].hydration.slice(0, 18) + '...' : MBTI_MESSAGES[m].hydration}
                   </p>
                 </div>
@@ -285,38 +353,37 @@ export default function Index() {
       </section>
 
       {/* ───── Interactive Demo Section ───── */}
-      <section id="demo" style={{ padding: '120px 24px', background: '#0a1e2e', position: 'relative' }}>
-        {/* 背景装饰 */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(56,201,163,0.3), transparent)' }} />
+      <section id="demo" style={{ padding: '120px 24px', background: s.pageBg, position: 'relative', transition: 'background 0.6s' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: s.decorLine }} />
 
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <p style={{ fontSize: 14, color: '#38c9a3', letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Live Demo</p>
-            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2 }}>在线体验</h2>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.5)', maxWidth: 480, margin: '0 auto', lineHeight: 1.8 }}>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Live Demo</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>在线体验</h2>
+            <p style={{ fontSize: 17, color: s.textSecondary, maxWidth: 480, margin: '0 auto', lineHeight: 1.8 }}>
               选择你的 MBTI 性格和提醒类型，点击按钮即可预览真实的通知卡片效果
             </p>
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, padding: 48,
-            backdropFilter: 'blur(20px)',
+            background: s.controlBg, border: `1px solid ${s.controlBorder}`, borderRadius: 28, padding: 48,
+            backdropFilter: 'blur(20px)', transition: 'all 0.4s',
           }}>
             {/* 提醒类型 */}
             <div style={{ marginBottom: 36 }}>
-              <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>提醒类型</h3>
+              <h3 style={{ fontSize: 16, color: s.textSecondary, marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>提醒类型</h3>
               <div style={{ display: 'flex', gap: 12 }}>
-                {(Object.keys(TASK_INFO) as TaskType[]).map(t => {
-                  const task = TASK_INFO[t];
-                  const active = selectedTask === t;
+                {(Object.keys(TASK_INFO) as TaskType[]).map(tk => {
+                  const task = TASK_INFO[tk];
+                  const active = selectedTask === tk;
                   const Icon = task.icon;
                   return (
-                    <button key={t} onClick={() => setSelectedTask(t)} style={{
+                    <button key={tk} onClick={() => setSelectedTask(tk)} style={{
                       flex: 1, padding: '16px 20px', borderRadius: 16, display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center',
-                      border: active ? '1px solid rgba(56,201,163,0.6)' : '1px solid rgba(255,255,255,0.1)',
-                      background: active ? 'rgba(56,201,163,0.12)' : 'rgba(255,255,255,0.02)',
+                      border: active ? `1px solid ${s.activeBorder}` : `1px solid ${s.controlBorder}`,
+                      background: active ? s.activeBg : isDay ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.02)',
                       cursor: 'pointer', transition: 'all 0.3s', fontSize: 16, fontFamily: FONT,
-                      color: active ? '#38c9a3' : 'rgba(255,255,255,0.5)', fontWeight: active ? 600 : 400,
+                      color: active ? s.accentColor : s.inactiveText, fontWeight: active ? 600 : 400,
                     }}>
                       <Icon size={20} />
                       {task.label}
@@ -328,14 +395,14 @@ export default function Index() {
 
             {/* MBTI 选择 */}
             <div style={{ marginBottom: 36 }}>
-              <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>MBTI 性格</h3>
+              <h3 style={{ fontSize: 16, color: s.textSecondary, marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>MBTI 性格</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 {MBTI_LIST.map(m => (
                   <button key={m} onClick={() => setSelectedMbti(m)} style={{
                     padding: '10px 22px', borderRadius: 100,
-                    border: selectedMbti === m ? '1px solid rgba(56,201,163,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                    background: selectedMbti === m ? 'rgba(56,201,163,0.12)' : 'transparent',
-                    color: selectedMbti === m ? '#38c9a3' : 'rgba(255,255,255,0.45)',
+                    border: selectedMbti === m ? `1px solid ${s.activeBorder}` : `1px solid ${s.controlBorder}`,
+                    background: selectedMbti === m ? s.activeBg : 'transparent',
+                    color: selectedMbti === m ? s.accentColor : s.inactiveText,
                     fontSize: 14, fontFamily: FONT, letterSpacing: 1, cursor: 'pointer', transition: 'all 0.3s',
                     fontWeight: selectedMbti === m ? 600 : 400,
                   }}>
@@ -347,14 +414,14 @@ export default function Index() {
 
             {/* 卡片尺寸 */}
             <div style={{ marginBottom: 36 }}>
-              <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>卡片尺寸</h3>
+              <h3 style={{ fontSize: 16, color: s.textSecondary, marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>卡片尺寸</h3>
               <div style={{ display: 'flex', gap: 12 }}>
                 {(['small', 'medium', 'large'] as CardSize[]).map(size => (
                   <button key={size} onClick={() => setSelectedCardSize(size)} style={{
                     padding: '10px 28px', borderRadius: 100,
-                    border: selectedCardSize === size ? '1px solid rgba(56,201,163,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                    background: selectedCardSize === size ? 'rgba(56,201,163,0.12)' : 'transparent',
-                    color: selectedCardSize === size ? '#38c9a3' : 'rgba(255,255,255,0.45)',
+                    border: selectedCardSize === size ? `1px solid ${s.activeBorder}` : `1px solid ${s.controlBorder}`,
+                    background: selectedCardSize === size ? s.activeBg : 'transparent',
+                    color: selectedCardSize === size ? s.accentColor : s.inactiveText,
                     fontSize: 14, fontFamily: FONT, cursor: 'pointer', transition: 'all 0.3s',
                     fontWeight: selectedCardSize === size ? 600 : 400,
                   }}>
@@ -364,33 +431,14 @@ export default function Index() {
               </div>
             </div>
 
-            {/* 主题模式 */}
-            <div style={{ marginBottom: 40 }}>
-              <h3 style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 16, fontWeight: 500, letterSpacing: 2 }}>主题模式</h3>
-              <div style={{ display: 'flex', gap: 12 }}>
-                {([
-                  { mode: 'day' as ThemeMode, icon: <Sun size={16} />, label: '白天' },
-                  { mode: 'auto' as ThemeMode, icon: <SunMoon size={16} />, label: '自动' },
-                  { mode: 'night' as ThemeMode, icon: <Moon size={16} />, label: '夜间' },
-                ]).map(item => (
-                  <button key={item.mode} onClick={() => setThemeMode(item.mode)} style={{
-                    flex: 1, padding: '12px 20px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center',
-                    border: themeMode === item.mode ? '1px solid rgba(56,201,163,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                    background: themeMode === item.mode ? 'rgba(56,201,163,0.12)' : 'transparent',
-                    color: themeMode === item.mode ? '#38c9a3' : 'rgba(255,255,255,0.45)',
-                    fontSize: 15, fontFamily: FONT, cursor: 'pointer', transition: 'all 0.3s',
-                    fontWeight: themeMode === item.mode ? 600 : 400,
-                  }}>
-                    {item.icon} {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* 预览文案 */}
-            <div style={{ padding: '24px 28px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 32 }}>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>当前文案预览</p>
-              <p style={{ fontSize: 18, color: '#fff', fontWeight: 500, margin: 0, lineHeight: 1.6 }}>
+            <div style={{
+              padding: '24px 28px', borderRadius: 16,
+              background: isDay ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${s.controlBorder}`, marginBottom: 32, transition: 'all 0.4s',
+            }}>
+              <p style={{ fontSize: 13, color: s.textTertiary, marginBottom: 8, letterSpacing: 1 }}>当前文案预览</p>
+              <p style={{ fontSize: 18, color: s.textPrimary, fontWeight: 500, margin: 0, lineHeight: 1.6 }}>
                 "{MBTI_MESSAGES[selectedMbti]?.[selectedTask]}"
               </p>
             </div>
@@ -398,8 +446,8 @@ export default function Index() {
             {/* 触发按钮 */}
             <button onClick={triggerNotification} style={{
               width: '100%', padding: '18px 0', borderRadius: 100, fontSize: 18, fontWeight: 600, letterSpacing: 4, cursor: 'pointer',
-              background: 'linear-gradient(135deg, #38c9a3, #2eb391)', border: 'none', color: '#fff', fontFamily: FONT,
-              boxShadow: '0 8px 32px rgba(56,201,163,0.35)', transition: 'all 0.3s',
+              background: s.ctaBtnBg, border: 'none', color: '#fff', fontFamily: FONT,
+              boxShadow: s.ctaBtnShadow, transition: 'all 0.3s',
             }}>
               <Play size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />
               触发提醒演示
@@ -409,16 +457,16 @@ export default function Index() {
       </section>
 
       {/* ───── Footer ───── */}
-      <footer style={{ padding: '60px 24px', background: '#081620', textAlign: 'center' }}>
+      <footer style={{ padding: '60px 24px', background: s.footerBg, textAlign: 'center', transition: 'background 0.6s' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
-          <Leaf size={20} style={{ color: '#38c9a3' }} />
-          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: 2 }}>青植呼吸 GreenBreathe</span>
+          <Leaf size={20} style={{ color: s.accentColor }} />
+          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: 2, color: s.textPrimary }}>青植呼吸 GreenBreathe</span>
         </div>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', margin: 0, lineHeight: 1.8 }}>
+        <p style={{ fontSize: 14, color: s.textTertiary, margin: 0, lineHeight: 1.8 }}>
           一款关注身心健康的 Chrome 扩展 · 基于 MBTI 的个性化提醒体验
         </p>
-        <div style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>
-          Made with <Heart size={14} style={{ display: 'inline', verticalAlign: 'middle', color: '#38c9a3' }} /> by GreenBreathe Team
+        <div style={{ marginTop: 20, fontSize: 13, color: s.textTertiary }}>
+          Made with <Heart size={14} style={{ display: 'inline', verticalAlign: 'middle', color: s.accentColor }} /> by GreenBreathe Team
         </div>
       </footer>
     </div>
