@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Droplets, Eye, PersonStanding, Play, Leaf, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon } from 'lucide-react';
+import { Droplets, Eye, PersonStanding, Play, Leaf, Sparkles, Shield, Palette, ChevronDown, Brain, Heart, Sun, Moon, SunMoon, Github, MessageCircle, Pen } from 'lucide-react';
 import { getTheme, resolveTheme, defaultBackgrounds, ThemeColors } from '@/lib/theme';
 import { ThemeMode } from '@/types/extension';
 import InkWashCanvas from '@/components/InkWashCanvas';
@@ -249,6 +249,13 @@ export default function Index() {
           <p style={{ fontSize: 22, color: s.textSecondary, margin: '0 0 12px', letterSpacing: 3, fontWeight: 300, transition: 'color 0.6s' }}>
             GreenBreathe
           </p>
+          <a href="https://github.com/weiweiyoudianpang/enter-GreenBreathe" target="_blank" rel="noopener noreferrer" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 15, color: s.accentColor,
+            textDecoration: 'none', marginBottom: 20, fontWeight: 500, letterSpacing: 1, transition: 'color 0.3s',
+          }}>
+            <Github size={18} />
+            插件地址
+          </a>
           <p style={{ fontSize: 18, color: s.textTertiary, margin: '0 0 48px', lineHeight: 1.8, maxWidth: 560, marginInline: 'auto', transition: 'color 0.6s' }}>
             在快节奏的数字生活中，为你提供片刻的宁静。基于 MBTI 性格的极简健康提醒，通过水墨晕开动画与专属文案，温柔地陪伴你的每一天。
           </p>
@@ -314,8 +321,8 @@ export default function Index() {
 
         <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center', marginBottom: 80 }}>
-            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Why GreenBreathe</p>
-            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>为什么选择青植呼吸</h2>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Key Features</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>主要特色</h2>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
@@ -478,6 +485,93 @@ export default function Index() {
               <Play size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />
               触发提醒演示
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ───── Screenshots Section ───── */}
+      <section style={{ padding: '120px 24px', background: s.sectionBg2, position: 'relative', transition: 'background 0.6s' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: s.decorLine }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Screenshots</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>实际画面</h2>
+            <p style={{ fontSize: 17, color: s.textSecondary, maxWidth: 480, margin: '0 auto', lineHeight: 1.8 }}>
+              插件在真实浏览器环境中的运行效果
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {[
+              { src: 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/0930.png', alt: '浏览器内嵌入式通知效果' },
+              { src: 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/8b5b.png', alt: '水墨晕开动画渐显效果' },
+              { src: 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/23c1.png', alt: '通知卡片与页面融合效果' },
+            ].map((img, i) => (
+              <div key={i} style={{
+                borderRadius: 20, overflow: 'hidden', border: `1px solid ${s.cardBorder}`,
+                boxShadow: isDay ? '0 8px 40px rgba(0,0,0,0.08)' : '0 8px 40px rgba(0,0,0,0.3)',
+                transition: 'all 0.4s',
+              }}>
+                <img crossOrigin="anonymous" src={img.src} alt={img.alt} style={{ width: '100%', display: 'block' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───── Author's Words Section ───── */}
+      <section style={{ padding: '120px 24px', background: s.sectionBg3, position: 'relative', transition: 'background 0.6s' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+            <p style={{ fontSize: 14, color: s.accentColor, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>From the Author</p>
+            <h2 style={{ fontSize: 42, fontWeight: 700, margin: '0 0 20px', letterSpacing: 2, color: s.textPrimary }}>作者的话</h2>
+          </div>
+
+          <div style={{
+            padding: '48px 44px', borderRadius: 24, background: s.cardBg, border: `1px solid ${s.cardBorder}`,
+            backdropFilter: 'blur(10px)', transition: 'all 0.4s', position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: 24, left: 36, opacity: 0.08, color: s.accentColor }}>
+              <Pen size={48} />
+            </div>
+
+            <p style={{ fontSize: 16, color: s.textPrimary, lineHeight: 2, margin: '0 0 28px', textIndent: '2em' }}>
+              AI的学习和工作经常让我忘记久坐和长时间用眼的肌肉疲劳，设计这个插件的主要原因是想提醒自己和各位在日常忙碌的工作当中，也要记得平时注意自己的身体健康，保持一个良好的身体状态，才会有一个好的心理状态，而保持良好的身体状态，需要的是日积月累的好习惯，不仅是偶尔的健身锻炼。
+            </p>
+            <p style={{ fontSize: 16, color: s.textPrimary, lineHeight: 2, margin: '0 0 36px', textIndent: '2em' }}>
+              你自己、你的家人朋友、你的宠物或者你追求的美好事物都可以成为你对自己身体负责的理由，有的时候可能只是需要小小的提醒和关心。
+            </p>
+
+            <div style={{ borderTop: `1px solid ${s.cardBorder}`, paddingTop: 28 }}>
+              <h4 style={{ fontSize: 18, fontWeight: 600, color: s.textPrimary, margin: '0 0 20px', letterSpacing: 1 }}>插件目前状态</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  '基础功能已经实现，我是希望设计越简单越好',
+                  '预留了音效接口暂未制作（感觉用不太上），所以也没有留语音API接口',
+                  'AI功能：更定制化的用户画像描写和更好的关切语（后续可能更新，还在交互的简单性和全面性方面考量）',
+                  '按时提醒吃药功能：目前我没有这个需要，后续可能会加上，方便不同人使用',
+                ].map((item, i) => (
+                  <li key={i} style={{ fontSize: 15, color: s.textSecondary, lineHeight: 1.8, paddingLeft: 20, position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 0, top: 2, width: 8, height: 8, borderRadius: '50%', background: s.accentColor, opacity: 0.5 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div style={{ borderTop: `1px solid ${s.cardBorder}`, paddingTop: 28, marginTop: 28, textAlign: 'center' }}>
+              <p style={{ fontSize: 16, color: s.textPrimary, margin: '0 0 20px', lineHeight: 1.8 }}>
+                大家有任何疑问和需求可以微信联系我
+              </p>
+              <a href="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100003000/a33b.jpg" target="_blank" rel="noopener noreferrer" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10, padding: '14px 36px',
+                background: s.activeBg, border: `1px solid ${s.activeBorder}`, borderRadius: 100,
+                color: s.accentColor, textDecoration: 'none', fontSize: 16, fontWeight: 600, letterSpacing: 1,
+                transition: 'all 0.3s', fontFamily: FONT,
+              }}>
+                <MessageCircle size={20} />
+                查看微信二维码
+              </a>
+            </div>
           </div>
         </div>
       </section>
