@@ -8,7 +8,13 @@ const ALARM_NAMES = {
   HYDRATION: 'greenBreathe_hydration',
   EYE_CARE: 'greenBreathe_eyeCare',
   MOVEMENT: 'greenBreathe_movement',
+  WEEKLY_REPORT: 'greenBreathe_weeklyReport',
 } as const;
+
+/** 浏览器启动后的「宽限期」（毫秒）——避免一打开浏览器就立刻弹窗 */
+const STARTUP_GRACE_MS = 5 * 60 * 1000;
+/** 跨日检测：距上次触发≥4小时，且日期不同时，按「新一天」对待 */
+const CROSS_DAY_MIN_GAP_MS = 4 * 3600 * 1000;
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
 
@@ -16,18 +22,19 @@ chrome.runtime.onInstalled.addListener(async () => {
   console.log('[GreenBreathe] Extension installed');
   const profile = await storage.getUserProfile();
   await storage.setUserProfile(profile);
-  await resetAlarms();
+  await resetAlarms({ startupGrace: false });
+  await scheduleWeeklyReport();
 });
 
-// Reset alarms on browser startup to prevent stale overdue alarms from firing immediately
+// Reset alarms on browser startup with grace period
 chrome.runtime.onStartup.addListener(async () => {
-  console.log('[GreenBreathe] Browser started, resetting alarms');
-  await resetAlarms();
+  console.log('[GreenBreathe] Browser started, resetting alarms with grace period');
+  await resetAlarms({ startupGrace: true });
+  await scheduleWeeklyReport();
 });
 
 // ─── Alarms ─────────────────────────────────────────────────────────────────
 
-// Track the last trigger time per task to prevent premature re-fires
 const LAST_TRIGGER_KEY = 'greenBreathe_lastTrigger';
 
 async function getLastTriggerTimes(): Promise<Record<string, number>> {
@@ -41,12 +48,21 @@ async function setLastTriggerTime(taskType: TaskType) {
   await chrome.storage.local.set({ [LAST_TRIGGER_KEY]: times });
 }
 
+function isSameLocalDay(a: number, b: number): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return da.getFullYear() === db.getFullYear()
+    && da.getMonth() === db.getMonth()
+    && da.getDate() === db.getDate();
+}
+
 /**
  * Reset all alarms using absolute `when` timestamps.
- * Uses the last trigger time to calculate the correct next fire time,
- * preventing early triggers after browser restart.
+ *
+ * - startupGrace: 浏览器启动时调用，本次任何触发时间均不早于 now + STARTUP_GRACE_MS
+ * - 跨日重置：若上次触发不是「今天」且距今≥4小时，按完整间隔重新计时（不携带昨日 overdue）
  */
-async function resetAlarms() {
+async function resetAlarms(opts: { startupGrace: boolean }) {
   const profile = await storage.getUserProfile();
   await chrome.alarms.clearAll();
 
@@ -57,28 +73,34 @@ async function resetAlarms() {
 
   const lastTriggers = await getLastTriggerTimes();
   const now = Date.now();
+  const earliestAllowed = opts.startupGrace ? now + STARTUP_GRACE_MS : now;
 
-  const createSmartAlarm = (name: string, intervalMin: number, taskKey: string) => {
+  const createSmartAlarm = (name: string, intervalMin: number, taskKey: TaskType) => {
     if (intervalMin <= 0) return;
     const intervalMs = intervalMin * 60 * 1000;
     const lastFired = lastTriggers[taskKey] || 0;
     const elapsed = now - lastFired;
+    const crossedDay = lastFired > 0 && !isSameLocalDay(lastFired, now) && elapsed >= CROSS_DAY_MIN_GAP_MS;
 
-    // Calculate when the alarm should next fire
     let nextFireMs: number;
-    if (lastFired === 0 || elapsed >= intervalMs) {
-      // Never fired or already overdue: fire after full interval from now
+    if (lastFired === 0 || crossedDay || elapsed >= intervalMs) {
+      // 从未触发 / 跨天 / 已过期：按完整间隔重新计时
       nextFireMs = now + intervalMs;
     } else {
-      // Not yet due: fire at the remaining time
+      // 还在间隔内：按剩余时间触发
       nextFireMs = lastFired + intervalMs;
+    }
+
+    // 应用启动宽限期
+    if (nextFireMs < earliestAllowed) {
+      nextFireMs = earliestAllowed;
     }
 
     chrome.alarms.create(name, {
       when: nextFireMs,
       periodInMinutes: intervalMin,
     });
-    console.log(`[GreenBreathe] Alarm ${name}: next in ${Math.round((nextFireMs - now) / 60000)}min`);
+    console.log(`[GreenBreathe] Alarm ${name}: next in ${Math.round((nextFireMs - now) / 60000)}min${crossedDay ? ' (cross-day reset)' : ''}${opts.startupGrace ? ' (startup grace)' : ''}`);
   };
 
   createSmartAlarm(ALARM_NAMES.HYDRATION, profile.hydrationInterval, 'hydration');
@@ -86,7 +108,36 @@ async function resetAlarms() {
   createSmartAlarm(ALARM_NAMES.MOVEMENT, profile.movementInterval, 'movement');
 }
 
+/**
+ * 每周一 09:00 触发周报（用上一周的数据）
+ */
+async function scheduleWeeklyReport() {
+  const now = new Date();
+  const next = new Date(now);
+  // 找到下一个周一 09:00
+  const day = next.getDay(); // 0..6, 0=Sun
+  let daysUntilMon = (8 - day) % 7; // 0=Sun→1, 1=Mon→0, 2=Tue→6...
+  if (daysUntilMon === 0) {
+    // 今天就是周一：若已过 09:00，安排到下周一
+    if (now.getHours() >= 9) daysUntilMon = 7;
+  }
+  next.setDate(next.getDate() + daysUntilMon);
+  next.setHours(9, 0, 0, 0);
+  await chrome.alarms.create(ALARM_NAMES.WEEKLY_REPORT, {
+    when: next.getTime(),
+    periodInMinutes: 7 * 24 * 60,
+  });
+  console.log(`[GreenBreathe] Weekly report scheduled at ${next.toLocaleString()}`);
+}
+
 chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === ALARM_NAMES.WEEKLY_REPORT) {
+    // 设置周报「待展示」标记，下次触发提醒时优先展示周报
+    await chrome.storage.local.set({ pendingWeeklyReport: { generatedAt: Date.now() } });
+    console.log('[GreenBreathe] Weekly report flag set');
+    return;
+  }
+
   let taskType: TaskType | null = null;
   switch (alarm.name) {
     case ALARM_NAMES.HYDRATION: taskType = 'hydration'; break;
@@ -96,14 +147,13 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
   if (!taskType) return;
 
-  // Guard: skip if fired too early (less than 80% of interval elapsed)
   const profile = await storage.getUserProfile();
   const intervalMin = taskType === 'hydration' ? profile.hydrationInterval
     : taskType === 'eyeCare' ? profile.eyeCareInterval
     : profile.movementInterval;
   const lastTriggers = await getLastTriggerTimes();
   const lastFired = lastTriggers[taskType] || 0;
-  const minGapMs = intervalMin * 60 * 1000 * 0.8; // 80% of interval as minimum gap
+  const minGapMs = intervalMin * 60 * 1000 * 0.8;
 
   if (lastFired > 0 && (Date.now() - lastFired) < minGapMs) {
     console.log(`[GreenBreathe] Skipping ${taskType}: only ${Math.round((Date.now() - lastFired) / 60000)}min since last, need ${intervalMin}min`);
@@ -111,6 +161,19 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
 
   await setLastTriggerTime(taskType);
+
+  // 是否有待展示的周报？若有，优先发送周报卡片（替换本次提醒）
+  const pendingFlag = await chrome.storage.local.get('pendingWeeklyReport');
+  if (pendingFlag.pendingWeeklyReport) {
+    await chrome.storage.local.remove('pendingWeeklyReport');
+    const sentReport = await sendWeeklyReportCard(profile);
+    if (sentReport) {
+      // 周报卡片发送成功，本次跳过普通提醒
+      return;
+    }
+    // 周报失败则降级为普通提醒
+  }
+
   await triggerNotification(taskType);
 });
 
@@ -131,28 +194,18 @@ async function triggerNotification(taskType: TaskType) {
     taskType, encouragement, instruction, timestamp: Date.now(),
   };
 
-  // Primary: send to content script in active tab (transparent overlay)
   const sent = await sendToContentScript(notificationData, profile);
 
-  // Fallback: standalone window (chrome:// pages, etc.)
   if (!sent) {
     await showNotificationWindow(notificationData, profile);
   }
 }
 
-/**
- * Try to send notification to content script in the active tab.
- * Uses a 3-step approach for maximum reliability:
- * 1. Try messaging the existing content script
- * 2. If that fails, programmatically inject the content script
- * 3. Try messaging again after injection
- */
 async function sendToContentScript(data: NotificationData, profile: Awaited<ReturnType<typeof storage.getUserProfile>>): Promise<boolean> {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return false;
 
-    // Skip chrome:// and other restricted pages
     const url = tab.url || '';
     if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
         url.startsWith('about:') || url.startsWith('edge://') ||
@@ -167,7 +220,6 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
       cardDisplayDuration: profile.cardDisplayDuration ?? 20,
     };
 
-    // Step 1: Try sending to existing content script
     try {
       const response = await chrome.tabs.sendMessage(tab.id, msg);
       if (response?.success === true) return true;
@@ -175,7 +227,6 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
       console.log('[GreenBreathe] Content script not loaded, injecting...');
     }
 
-    // Step 2: Programmatically inject content script
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -186,7 +237,6 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
       return false;
     }
 
-    // Step 3: Wait for script to initialize, then retry message
     await new Promise(resolve => setTimeout(resolve, 300));
     try {
       const response = await chrome.tabs.sendMessage(tab.id, msg);
@@ -202,8 +252,57 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
 }
 
 /**
- * Fallback: open a standalone notification window.
+ * 在活动 tab 内嵌入「周报概览卡片」，点击可跳转完整周报页
  */
+async function sendWeeklyReportCard(profile: Awaited<ReturnType<typeof storage.getUserProfile>>): Promise<boolean> {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) {
+      // 无活动 tab，直接打开周报新标签页
+      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
+      return true;
+    }
+    const url = tab.url || '';
+    if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
+        url.startsWith('about:') || url.startsWith('edge://') ||
+        url.startsWith('devtools://') || url.startsWith('view-source:')) {
+      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
+      return true;
+    }
+
+    const msg = {
+      type: 'SHOW_WEEKLY_REPORT_CARD',
+      cardDisplayDuration: profile.cardDisplayDuration ?? 20,
+    };
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, msg);
+      if (response?.success === true) return true;
+    } catch {
+      console.log('[GreenBreathe] Content script not loaded for weekly report, injecting...');
+    }
+
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+    } catch {
+      // 注入失败：fallback 直接打开周报页
+      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
+      return true;
+    }
+    await new Promise(r => setTimeout(r, 300));
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, msg);
+      if (response?.success === true) return true;
+    } catch { /* swallow */ }
+
+    // 最终 fallback
+    await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
+    return true;
+  } catch (e) {
+    console.error('[GreenBreathe] sendWeeklyReportCard error:', e);
+    return false;
+  }
+}
+
 async function showNotificationWindow(data: NotificationData, profile: Awaited<ReturnType<typeof storage.getUserProfile>>) {
   await chrome.storage.local.set({
     pendingNotification: data,
@@ -239,7 +338,6 @@ async function showNotificationWindow(data: NotificationData, profile: Awaited<R
       left, top, focused: true,
     });
 
-    // Auto-close after configured duration
     const displayDuration = (profile.cardDisplayDuration ?? 20) * 1000;
     setTimeout(async () => {
       try { if (win.id) await chrome.windows.remove(win.id); } catch { /* already closed */ }
@@ -275,7 +373,7 @@ function isQuietHours(quietHours: string[]): boolean {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'UPDATE_ALARM') {
-    resetAlarms().then(() => sendResponse({ success: true }));
+    resetAlarms({ startupGrace: false }).then(() => sendResponse({ success: true }));
     return true;
   }
 
@@ -283,6 +381,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     const taskTypes: TaskType[] = ['hydration', 'eyeCare', 'movement'];
     const randomTask = taskTypes[Math.floor(Math.random() * taskTypes.length)];
     triggerNotification(randomTask)
+      .then(() => sendResponse({ success: true }))
+      .catch((error) => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (message.type === 'OPEN_WEEKLY_REPORT') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('report.html') })
+      .then(() => sendResponse({ success: true }))
+      .catch((error) => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (message.type === 'TRIGGER_TEST_WEEKLY_REPORT') {
+    storage.getUserProfile().then(p => sendWeeklyReportCard(p))
       .then(() => sendResponse({ success: true }))
       .catch((error) => sendResponse({ success: false, error: error.message }));
     return true;

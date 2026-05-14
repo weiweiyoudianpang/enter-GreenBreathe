@@ -45,8 +45,8 @@ export const storage = {
   async addInteractionLog(log: InteractionLog): Promise<void> {
     const logs = await this.getInteractionLog();
     logs.push(log);
-    // Keep only last 100 logs
-    const recentLogs = logs.slice(-100);
+    // Keep only last 1000 logs (~enough for 4 weeks of data even on heavy usage)
+    const recentLogs = logs.slice(-1000);
     await chrome.storage.local.set({
       [STORAGE_KEYS.INTERACTION_LOG]: recentLogs,
     });

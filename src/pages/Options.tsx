@@ -26,6 +26,7 @@ const mbtiTypes = [
 const positionOptions = [
   { value: 'top_right', label: '右上角' }, { value: 'top_left', label: '左上角' },
   { value: 'bottom_right', label: '右下角' }, { value: 'bottom_left', label: '左下角' },
+  { value: 'random', label: '4 角随机（推荐）' },
 ];
 
 const cardSizeOptions = [
@@ -315,6 +316,7 @@ function OptionsPage() {
               </select>
               <ChevronDown size={18} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: t.textMuted, pointerEvents: 'none' }} />
             </div>
+            <p style={s.hint}>选择"4 角随机"可让卡片每次出现在不同位置，减少视觉疲劳</p>
           </div>
           <div style={{ marginBottom: 24 }}>
             <label style={s.label}>卡片尺寸</label>

@@ -1,5 +1,6 @@
 // Content Script - Injects transparent ink-wash notification into web pages
-import { NotificationData } from '@/types/extension';
+import { NotificationData, NotificationStyleKey } from '@/types/extension';
+import { pickRandomStyle } from '@/lib/notificationStyles';
 
 // Guard against duplicate injection
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,22 +134,9 @@ function isUserActivelyInteracting(): boolean {
   return now - lastMouseMove < 5000 || now - lastScroll < 5000;
 }
 
-// ─── Resolve theme from storage ─────────────────────────────────────────────
+// ─── Resolve theme/bg from storage ─────────────────────────────────────────
 
-interface ThemeResult {
-  isDay: boolean;
-  bgImages: string[];
-  accent: string;
-  accentHover: string;
-  textPrimary: string;
-  textSecondary: string;
-  contentBg: string;
-  contentBorder: string;
-  btnBg: string;
-  btnColor: string;
-}
-
-async function resolveNotificationTheme(): Promise<ThemeResult> {
+async function resolveBgImages(): Promise<{ isDay: boolean; bgImages: string[] }> {
   const result = await chrome.storage.local.get('userProfile');
   const profile = result.userProfile || {};
   const themeMode = profile.themeMode || 'auto';
@@ -167,29 +155,42 @@ async function resolveNotificationTheme(): Promise<ThemeResult> {
   } else {
     bgImages = customNight.length > 0 ? customNight : nightBgs.map(f => chrome.runtime.getURL(`images/night/${f}`));
   }
+  return { isDay, bgImages };
+}
 
-  if (isDay) {
-    return {
-      isDay: true, bgImages,
-      accent: '#059669', accentHover: '#047857',
-      textPrimary: '#064e3b', textSecondary: '#065f46',
-      contentBg: 'rgba(255,255,255,0.65)',
-      contentBorder: '1px solid rgba(16,185,129,0.2)',
-      btnBg: '#059669', btnColor: '#ffffff',
-    };
-  } else {
-    return {
-      isDay: false, bgImages,
-      accent: '#38c9a3', accentHover: '#2db892',
-      textPrimary: '#e8f4f0', textSecondary: '#a0c4b8',
-      contentBg: 'rgba(10,30,46,0.55)',
-      contentBorder: '1px solid rgba(56,201,163,0.15)',
-      btnBg: '#38c9a3', btnColor: '#0a1e2e',
-    };
+// ─── Position resolution（含 random 4 角） ────────────────────────────────
+
+const CORNER_POSITIONS = ['top_right', 'top_left', 'bottom_right', 'bottom_left'] as const;
+type CornerPosition = typeof CORNER_POSITIONS[number];
+
+function resolvePosition(saved: string | undefined): CornerPosition {
+  if (saved === 'random') {
+    return CORNER_POSITIONS[Math.floor(Math.random() * CORNER_POSITIONS.length)];
   }
+  if (saved && (CORNER_POSITIONS as readonly string[]).includes(saved)) {
+    return saved as CornerPosition;
+  }
+  return 'top_right';
 }
 
 // ─── Show notification ──────────────────────────────────────────────────────
+
+interface ActiveNotification {
+  wrapper: HTMLElement;
+  taskType: string;
+  style: NotificationStyleKey;
+  shownAt: number;
+  resolved: boolean;
+  blurListener: () => void;
+  autoTimerId: number;
+}
+
+let activeNotif: ActiveNotification | null = null;
+
+/** 3 秒阈值：低于此值的关闭都视为「未真正阅读」 */
+const READ_THRESHOLD_MS = 3000;
+/** 失焦容忍：弹窗显示后 5 秒内切走视为放弃 */
+const BLUR_GRACE_MS = 5000;
 
 async function showNotification(data: NotificationData, retryCount = 0, inkDuration = 3, cardDisplayDuration = 20) {
   if (shouldDelayNotification() && retryCount < 3) {
@@ -203,10 +204,11 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
 
   const profileResult = await chrome.storage.local.get('userProfile');
   const profile = profileResult.userProfile || {};
-  const position = profile.notificationPosition || 'top_right';
+  const position = resolvePosition(profile.notificationPosition);
   const cardSize = profile.cardSize || 'medium';
   const mbtiType = profile.mbtiType || 'INFP';
-  const theme = await resolveNotificationTheme();
+  const { isDay, bgImages } = await resolveBgImages();
+  const style = pickRandomStyle(isDay);
 
   const sizeMap: Record<string, { width: number; height: number }> = {
     small: { width: 960, height: 570 },
@@ -215,7 +217,6 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
   };
   const { width, height } = sizeMap[cardSize] || sizeMap.medium;
 
-  // MBTI-adapted text
   const isThinker = mbtiType.includes('T');
   const isIntuitive = mbtiType.includes('N');
   let scienceText = '';
@@ -223,9 +224,7 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
   else if (isIntuitive) scienceText = data.instruction.mbtiAdaptation.N;
   else scienceText = data.instruction.mbtiAdaptation.F;
 
-  const actionTexts = ['了解啦', '谢谢关心', 'OK', '收到', '这就去'];
-  const randomAction = actionTexts[Math.floor(Math.random() * actionTexts.length)];
-  const bgImage = theme.bgImages[Math.floor(Math.random() * theme.bgImages.length)];
+  const bgImage = bgImages[Math.floor(Math.random() * bgImages.length)];
 
   // ─── Create overlay container ───
   let root = document.getElementById('green-breathe-notification-root');
@@ -244,45 +243,82 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
   const container = document.createElement('div');
   container.style.cssText = `
     width: ${width}px; height: ${height}px; position: relative; overflow: hidden;
-    border-radius: 24px; pointer-events: none;
-    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    border-radius: ${style.borderRadius}px; pointer-events: none;
+    font-family: ${style.fontFamily};
     mix-blend-mode: multiply;
+    ${style.pixelArt ? 'image-rendering: pixelated;' : ''}
   `;
 
-  // Canvas for ink-wash paint
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;border-radius:24px;';
+  canvas.style.cssText = `position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;border-radius:${style.borderRadius}px;${style.pixelArt ? 'image-rendering: pixelated;' : ''}`;
   container.appendChild(canvas);
 
-  // Content box (initially hidden)
   const contentBox = document.createElement('div');
   contentBox.style.cssText = `
-    position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
-    background: ${theme.contentBg};
+    position: absolute; bottom: 0; left: 0; right: 0; height: 32%;
+    background: ${style.contentBg};
     backdrop-filter: blur(28px) saturate(150%); -webkit-backdrop-filter: blur(28px) saturate(150%);
-    border-top: ${theme.contentBorder};
-    padding: 40px 60px;
+    border-top: ${style.contentBorder};
+    padding: 32px 56px;
     display: flex; flex-direction: column; justify-content: center;
     z-index: 2; pointer-events: auto;
     opacity: 0; transform: translateY(20px); filter: blur(8px);
     transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
-    border-radius: 0 0 24px 24px;
+    border-radius: 0 0 ${style.borderRadius}px ${style.borderRadius}px;
   `;
+
+  const titleSize = style.pixelArt ? 22 : 30;
+  const subSize = style.pixelArt ? 14 : 19;
+  const btnSize = style.pixelArt ? 13 : 17;
+
   contentBox.innerHTML = `
-    <div style="font-size:32px;line-height:1.5;margin-bottom:16px;color:${theme.textPrimary};font-weight:600;letter-spacing:1px">${data.encouragement}</div>
-    <div style="font-size:20px;color:${theme.textSecondary};margin-bottom:24px;line-height:1.6;font-weight:500">${data.instruction.instruction} · ${scienceText}</div>
-    <div style="display:flex;gap:12px;justify-content:flex-end">
-      <button class="gb-dismiss" style="
-        padding:12px 32px;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;border:none;
-        font-family:'Microsoft YaHei','PingFang SC',sans-serif;
-        background:${theme.btnBg};color:${theme.btnColor};
+    <div style="font-size:${titleSize}px;line-height:1.5;margin-bottom:14px;color:${style.textPrimary};font-weight:600;letter-spacing:${style.pixelArt ? 0 : 1}px">${escapeHtml(data.encouragement)}</div>
+    <div style="font-size:${subSize}px;color:${style.textSecondary};margin-bottom:22px;line-height:1.6;font-weight:500">${escapeHtml(data.instruction.instruction)} · ${escapeHtml(scienceText)}</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="gb-ghost gb-snooze" style="
+        padding:10px 22px;border-radius:${Math.max(8, style.borderRadius - 8)}px;font-size:${btnSize}px;font-weight:600;cursor:pointer;
+        font-family:${style.fontFamily};
+        background:${style.ghostButtonBg};color:${style.ghostButtonColor};border:${style.ghostButtonBorder};
+        transition:all 0.3s ease;pointer-events:auto;
+      ">稍后再说</button>
+      <button class="gb-ghost gb-ignore" style="
+        padding:10px 22px;border-radius:${Math.max(8, style.borderRadius - 8)}px;font-size:${btnSize}px;font-weight:600;cursor:pointer;
+        font-family:${style.fontFamily};
+        background:${style.ghostButtonBg};color:${style.ghostButtonColor};border:${style.ghostButtonBorder};
+        transition:all 0.3s ease;pointer-events:auto;
+      ">先不了</button>
+      <button class="gb-primary gb-complete" style="
+        padding:10px 28px;border-radius:${Math.max(8, style.borderRadius - 8)}px;font-size:${btnSize}px;font-weight:600;cursor:pointer;border:${style.pixelArt ? '2px solid ' + style.buttonHover : 'none'};
+        font-family:${style.fontFamily};
+        background:${style.buttonBg};color:${style.buttonColor};
         box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 0.3s ease;pointer-events:auto;
-      ">${randomAction}</button>
+      ">我已完成</button>
     </div>
   `;
   container.appendChild(contentBox);
   shadow.appendChild(container);
   root.appendChild(wrapper);
+
+  // ─── Track active notification for passive judgement ───
+  const shownAt = Date.now();
+  // Auto-dismiss timer
+  const autoTimerId = window.setTimeout(() => {
+    finalize('timeout');
+  }, cardDisplayDuration * 1000);
+
+  // Window blur within grace window → ignored
+  const blurListener = () => {
+    if (!activeNotif || activeNotif.resolved) return;
+    if (Date.now() - activeNotif.shownAt < BLUR_GRACE_MS) {
+      finalize('window_blur');
+    }
+  };
+  window.addEventListener('blur', blurListener, { once: false });
+
+  activeNotif = {
+    wrapper, taskType: data.taskType, style: style.key,
+    shownAt, resolved: false, blurListener, autoTimerId,
+  };
 
   // ─── Load image & run ink wash paint animation ───
   const img = new Image();
@@ -295,7 +331,6 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
     if (!ctx) return;
     ctx.scale(dpr, dpr);
 
-    // Compute cover crop
     const imgRatio = img.width / img.height;
     const canvasRatio = width / height;
     let sx = 0, sy = 0, sw = img.width, sh = img.height;
@@ -307,12 +342,10 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
       sy = (img.height - sh) / 2;
     }
 
-    // Compute animation speed from inkDuration setting
     const effectiveSpeed = inkDuration > 0 ? 4.0 / inkDuration : 999;
     const maxAnimTime = inkDuration > 0 ? inkDuration * 1000 : 0;
 
     if (inkDuration <= 0) {
-      // Instant: skip animation, show image immediately
       ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
       contentBox.style.opacity = '1';
       contentBox.style.transform = 'translateY(0)';
@@ -329,7 +362,6 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
 
         ctx!.clearRect(0, 0, width, height);
 
-        // Draw image through blob clip paths
         ctx!.save();
         ctx!.beginPath();
         for (const d of drops) {
@@ -342,7 +374,6 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
         ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
         ctx!.restore();
 
-        // Soft feathered edge
         ctx!.globalAlpha = 0.12;
         ctx!.save();
         ctx!.beginPath();
@@ -361,7 +392,6 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
           done = true;
           ctx!.clearRect(0, 0, width, height);
           ctx!.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
-          // Show content
           contentBox.style.opacity = '1';
           contentBox.style.transform = 'translateY(0)';
           contentBox.style.filter = 'blur(0)';
@@ -379,32 +409,176 @@ async function showNotification(data: NotificationData, retryCount = 0, inkDurat
   };
   img.src = bgImage;
 
-  // ─── Dismiss handler ───
-  const dismissBtn = shadow.querySelector('.gb-dismiss') as HTMLButtonElement;
-  const dismiss = () => {
-    logInteraction('completed', data.taskType);
-    container.style.transition = 'all 1.2s cubic-bezier(0.22,1,0.36,1)';
+  // ─── Button handlers ───
+  const completeBtn = shadow.querySelector('.gb-complete') as HTMLButtonElement;
+  const snoozeBtn = shadow.querySelector('.gb-snooze') as HTMLButtonElement;
+  const ignoreBtn = shadow.querySelector('.gb-ignore') as HTMLButtonElement;
+
+  completeBtn?.addEventListener('click', () => {
+    const elapsed = Date.now() - shownAt;
+    if (elapsed < READ_THRESHOLD_MS) {
+      // 防误点：< 3 秒按 fast_dismiss 处理
+      finalize('fast_dismiss');
+    } else {
+      finalize('user_completed');
+    }
+  });
+  snoozeBtn?.addEventListener('click', () => finalize('user_snoozed'));
+  ignoreBtn?.addEventListener('click', () => {
+    const elapsed = Date.now() - shownAt;
+    finalize(elapsed < READ_THRESHOLD_MS ? 'fast_dismiss' : 'timeout');
+  });
+
+  function finalize(reason: 'user_completed' | 'user_snoozed' | 'fast_dismiss' | 'timeout' | 'window_blur') {
+    if (!activeNotif || activeNotif.resolved) return;
+    activeNotif.resolved = true;
+    clearTimeout(activeNotif.autoTimerId);
+    window.removeEventListener('blur', activeNotif.blurListener);
+
+    const elapsed = Date.now() - activeNotif.shownAt;
+    let action: 'completed' | 'snoozed' | 'ignored';
+    if (reason === 'user_completed') action = 'completed';
+    else if (reason === 'user_snoozed') action = 'snoozed';
+    else action = 'ignored';
+
+    logInteraction(action, activeNotif.taskType, elapsed, reason, activeNotif.style);
+
+    container.style.transition = 'all 1.0s cubic-bezier(0.22,1,0.36,1)';
     container.style.opacity = '0';
     container.style.filter = 'blur(10px)';
-    container.style.transform = 'scale(0.95)';
-    setTimeout(() => wrapper.remove(), 1500);
-  };
-  dismissBtn?.addEventListener('click', dismiss);
+    container.style.transform = 'scale(0.96)';
+    setTimeout(() => wrapper.remove(), 1100);
+    activeNotif = null;
+  }
+}
 
-  // Auto-dismiss after configured display duration
-  setTimeout(() => {
-    if (wrapper.parentElement) dismiss();
-  }, cardDisplayDuration * 1000);
+function escapeHtml(s: string): string {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+}
+
+// ─── Weekly Report inline overview card ─────────────────────────────────────
+
+async function showWeeklyReportCard(cardDisplayDuration = 20) {
+  const profileResult = await chrome.storage.local.get('userProfile');
+  const profile = profileResult.userProfile || {};
+  const position = resolvePosition(profile.notificationPosition);
+  const { isDay } = await resolveBgImages();
+
+  // Aggregate quick stats
+  const logsResult = await chrome.storage.local.get('interactionLog');
+  const logs = (logsResult.interactionLog || []) as Array<{ timestamp: number; action: string }>;
+  const now = new Date();
+  const day = now.getDay();
+  const daysFromMonday = (day === 0 ? 6 : day - 1);
+  const lastMon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysFromMonday - 7, 0, 0, 0, 0);
+  const lastSun = new Date(lastMon.getTime() + 7 * 24 * 3600 * 1000);
+  const weekLogs = logs.filter(l => l.timestamp >= lastMon.getTime() && l.timestamp < lastSun.getTime());
+  const completed = weekLogs.filter(l => l.action === 'completed').length;
+  const total = weekLogs.length;
+  const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const bgGradient = isDay
+    ? 'linear-gradient(135deg, rgba(220,252,231,0.95), rgba(167,243,208,0.92))'
+    : 'linear-gradient(135deg, rgba(15,40,55,0.95), rgba(10,30,46,0.92))';
+  const textPrimary = isDay ? '#064e3b' : '#e8f4f0';
+  const textSecondary = isDay ? '#065f46' : '#a0c4b8';
+  const accent = isDay ? '#059669' : '#38c9a3';
+  const accentText = isDay ? '#ffffff' : '#0a1e2e';
+  const ghostBorder = isDay ? 'rgba(16,185,129,0.35)' : 'rgba(56,201,163,0.35)';
+
+  const width = 460, height = 280;
+
+  let root = document.getElementById('green-breathe-notification-root');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'green-breathe-notification-root';
+    document.body.appendChild(root);
+  }
+  root.innerHTML = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `green-breathe-notification ${position}`;
+  const shadow = wrapper.attachShadow({ mode: 'open' });
+
+  const container = document.createElement('div');
+  container.style.cssText = `
+    width:${width}px;height:${height}px;border-radius:20px;
+    background:${bgGradient};
+    backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);
+    box-shadow:0 12px 40px rgba(0,0,0,0.18);
+    padding:24px 28px;box-sizing:border-box;pointer-events:auto;
+    font-family:'Microsoft YaHei','PingFang SC',sans-serif;
+    display:flex;flex-direction:column;
+    opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.22,1,0.36,1);
+  `;
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${accent};box-shadow:0 0 8px ${accent}80"></span>
+      <span style="font-size:13px;color:${textSecondary};letter-spacing:1px;">本周回顾 · 周报</span>
+    </div>
+    <div style="font-size:22px;font-weight:700;color:${textPrimary};margin-bottom:18px;line-height:1.4;">
+      ${completed > 0 ? `本周你完成了 ${completed} 次提醒` : '本周还没有完成记录'}
+    </div>
+    <div style="display:flex;gap:14px;margin-bottom:20px;">
+      <div style="flex:1;padding:12px 14px;border-radius:12px;background:${isDay ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.06)'};">
+        <div style="font-size:11px;color:${textSecondary};letter-spacing:1px;">完成率</div>
+        <div style="font-size:24px;font-weight:700;color:${accent};margin-top:2px;">${rate}%</div>
+      </div>
+      <div style="flex:1;padding:12px 14px;border-radius:12px;background:${isDay ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.06)'};">
+        <div style="font-size:11px;color:${textSecondary};letter-spacing:1px;">收到提醒</div>
+        <div style="font-size:24px;font-weight:700;color:${textPrimary};margin-top:2px;">${total}</div>
+      </div>
+    </div>
+    <div style="margin-top:auto;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="gb-wr-close" style="
+        padding:10px 18px;border-radius:10px;font-size:14px;cursor:pointer;
+        background:transparent;color:${textSecondary};border:1px solid ${ghostBorder};
+        font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-weight:500;
+      ">稍后再看</button>
+      <button class="gb-wr-open" style="
+        padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;
+        background:${accent};color:${accentText};border:none;
+        font-family:'Microsoft YaHei','PingFang SC',sans-serif;
+        box-shadow:0 4px 12px ${accent}40;
+      ">查看完整周报</button>
+    </div>
+  `;
+  shadow.appendChild(container);
+  root.appendChild(wrapper);
+
+  requestAnimationFrame(() => {
+    container.style.opacity = '1';
+    container.style.transform = 'translateY(0)';
+  });
+
+  const close = () => {
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(20px)';
+    setTimeout(() => wrapper.remove(), 700);
+  };
+  shadow.querySelector('.gb-wr-close')?.addEventListener('click', close);
+  shadow.querySelector('.gb-wr-open')?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'OPEN_WEEKLY_REPORT' });
+    close();
+  });
+  setTimeout(() => { if (wrapper.parentElement) close(); }, cardDisplayDuration * 1000);
 }
 
 // ─── Interaction logging ────────────────────────────────────────────────────
 
-async function logInteraction(action: 'completed' | 'dismissed', taskType: string) {
+async function logInteraction(
+  action: 'completed' | 'snoozed' | 'ignored',
+  taskType: string,
+  shownDurationMs: number,
+  reason: 'user_completed' | 'user_snoozed' | 'fast_dismiss' | 'timeout' | 'window_blur',
+  style: NotificationStyleKey,
+) {
   try {
     const result = await chrome.storage.local.get('interactionLog');
     const logs = result.interactionLog || [];
-    logs.push({ timestamp: Date.now(), action, taskType });
-    if (logs.length > 100) logs.splice(0, logs.length - 100);
+    logs.push({ timestamp: Date.now(), action, taskType, shownDurationMs, reason, style });
+    if (logs.length > 1000) logs.splice(0, logs.length - 1000);
     await chrome.storage.local.set({ interactionLog: logs });
 
     if (action === 'completed') {
@@ -424,6 +598,12 @@ async function logInteraction(action: 'completed' | 'dismissed', taskType: strin
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'SHOW_NOTIFICATION') {
     showNotification(message.data, 0, message.inkDuration, message.cardDisplayDuration)
+      .then(() => sendResponse({ success: true }))
+      .catch((error) => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+  if (message.type === 'SHOW_WEEKLY_REPORT_CARD') {
+    showWeeklyReportCard(message.cardDisplayDuration)
       .then(() => sendResponse({ success: true }))
       .catch((error) => sendResponse({ success: false, error: error.message }));
     return true;

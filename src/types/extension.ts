@@ -7,7 +7,9 @@ export type MBTIType =
 
 export type TaskType = 'hydration' | 'eyeCare' | 'movement';
 
-export type NotificationPosition = 'top_right' | 'top_left' | 'bottom_right' | 'bottom_left';
+export type NotificationPosition = 'top_right' | 'top_left' | 'bottom_right' | 'bottom_left' | 'random';
+
+export type NotificationStyleKey = 'inkWash' | 'gongbi' | 'pixel' | 'paper';
 
 export type ThemeMode = 'day' | 'night' | 'auto';
 
@@ -39,8 +41,20 @@ export interface UserProfile {
 
 export interface InteractionLog {
   timestamp: number;
-  action: 'completed' | 'snoozed' | 'dismissed';
+  /**
+   * 用户对提醒卡片的真实反馈状态
+   * - completed: 卡片显示≥3秒，且用户主动点击「我已完成」
+   * - snoozed:   用户点击「稍后再说」
+   * - ignored:   未交互（被动信号）：快速关闭/超时/失焦
+   */
+  action: 'completed' | 'snoozed' | 'ignored';
   taskType: TaskType;
+  /** 卡片实际展示时长（毫秒） */
+  shownDurationMs?: number;
+  /** ignored / snoozed 的具体原因 */
+  reason?: 'user_completed' | 'user_snoozed' | 'fast_dismiss' | 'timeout' | 'window_blur';
+  /** 当次使用的视觉风格 */
+  style?: NotificationStyleKey;
 }
 
 export interface PlantGrowth {

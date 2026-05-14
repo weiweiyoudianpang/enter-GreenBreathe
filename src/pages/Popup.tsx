@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import '@/index.css';
 import { storage } from '@/lib/storage';
 import { UserProfile, PlantGrowth } from '@/types/extension';
-import { Droplets, Eye, PersonStanding, Leaf, Sun, Moon, Settings, Zap } from 'lucide-react';
+import { Droplets, Eye, PersonStanding, Leaf, Sun, Moon, Settings, Zap, BarChart3 } from 'lucide-react';
 import { getTheme, resolveTheme } from '@/lib/theme';
 
 /** Breathing phase names and durations (ms) */
@@ -165,6 +165,10 @@ function PopupPage() {
   };
 
   const openOptions = () => chrome.runtime.openOptionsPage();
+  const openReport = () => {
+    chrome.runtime.sendMessage({ type: 'OPEN_WEEKLY_REPORT' });
+    window.close();
+  };
   const triggerTest = async () => {
     await chrome.runtime.sendMessage({ type: 'TRIGGER_TEST_NOTIFICATION' });
     window.close();
@@ -258,6 +262,14 @@ function PopupPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
             <Zap size={16} /> 立即测试提醒
+          </button>
+          <button onClick={openReport} style={{
+            width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, fontWeight: 500, letterSpacing: 1, cursor: 'pointer',
+            background: t.accentSoft, border: `1px solid ${t.accent}40`, color: t.accent,
+            fontFamily: "'Microsoft YaHei','PingFang SC',sans-serif", transition: 'all 0.3s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+            <BarChart3 size={14} /> 查看本周回顾
           </button>
           <button onClick={openOptions} style={{
             width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, fontWeight: 500, letterSpacing: 1, cursor: 'pointer',
