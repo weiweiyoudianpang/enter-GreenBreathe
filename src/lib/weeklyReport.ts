@@ -256,3 +256,100 @@ export const TASK_LABELS: Record<TaskType, string> = {
 };
 
 export const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
+
+/* ───────────────────────── 每日明细 ───────────────────────── */
+
+export interface DayDetail {
+  date: string;                     // "2025-05-12"
+  dateLabel: string;                // "05/12 (周一)"
+  weekday: string;                  // "周一"
+  totalTriggered: number;
+  totalCompleted: number;
+  totalSnoozed: number;
+  totalIgnored: number;
+  byTask: {
+    hydration: { triggered: number; completed: number; snoozed: number; ignored: number };
+    eyeCare:   { triggered: number; completed: number; snoozed: number; ignored: number };
+    movement:  { triggered: number; completed: number; snoozed: number; ignored: number };
+  };
+}
+
+const WD_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * 聚合过去 N 天的每日明细（默认 60 天）
+ * 返回数组按日期从新到旧排列
+ */
+export function getDailyDetails(logs: InteractionLog[], days = 60): DayDetail[] {
+  const now = new Date();
+  const results: DayDetail[] = [];
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const start = d.getTime();
+    const end = start + 86400000;
+
+    const dayLogs = logs.filter(l => l.timestamp >= start && l.timestamp < end);
+    if (dayLogs.length === 0 && i > 0) {
+      // 没有数据的天仍然包含（显示全零），但跳过最近 0 条的尾部（截止到有数据的最远一天）
+      // 实际上全部包含，让用户可以看到完整日历
+    }
+
+    const tasks = ['hydration', 'eyeCare', 'movement'] as const;
+    const byTask = {} as DayDetail['byTask'];
+    for (const t of tasks) {
+      const tLogs = dayLogs.filter(l => l.taskType === t);
+      byTask[t] = {
+        triggered: tLogs.length,
+        completed: tLogs.filter(l => l.action === 'completed').length,
+        snoozed: tLogs.filter(l => l.action === 'snoozed').length,
+        ignored: tLogs.filter(l => l.action === 'ignored').length,
+      };
+    }
+
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const wd = WD_LABELS[d.getDay()];
+
+    results.push({
+      date: toDateStr(d),
+      dateLabel: `${mm}/${dd} (${wd})`,
+      weekday: wd,
+      totalTriggered: dayLogs.length,
+      totalCompleted: dayLogs.filter(l => l.action === 'completed').length,
+      totalSnoozed: dayLogs.filter(l => l.action === 'snoozed').length,
+      totalIgnored: dayLogs.filter(l => l.action === 'ignored').length,
+      byTask,
+    });
+  }
+
+  return results;
+}
+
+/** 生成可用于 xlsx 的二维数组（含标题行） */
+export function dailyDetailsToSheetData(details: DayDetail[]): (string | number)[][] {
+  const header: string[] = [
+    '日期', '星期',
+    '收到总数', '完成总数', '稍后', '未响应', '完成率(%)',
+    '喝水-收到', '喝水-完成', '喝水-稍后', '喝水-未响应',
+    '眼睛-收到', '眼睛-完成', '眼睛-稍后', '眼睛-未响应',
+    '活动-收到', '活动-完成', '活动-稍后', '活动-未响应',
+  ];
+
+  const rows = details.map(d => {
+    const rate = d.totalTriggered > 0 ? Math.round((d.totalCompleted / d.totalTriggered) * 100) : 0;
+    return [
+      d.date, d.weekday,
+      d.totalTriggered, d.totalCompleted, d.totalSnoozed, d.totalIgnored, rate,
+      d.byTask.hydration.triggered, d.byTask.hydration.completed, d.byTask.hydration.snoozed, d.byTask.hydration.ignored,
+      d.byTask.eyeCare.triggered, d.byTask.eyeCare.completed, d.byTask.eyeCare.snoozed, d.byTask.eyeCare.ignored,
+      d.byTask.movement.triggered, d.byTask.movement.completed, d.byTask.movement.snoozed, d.byTask.movement.ignored,
+    ];
+  });
+
+  return [header, ...rows];
+}

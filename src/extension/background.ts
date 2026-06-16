@@ -254,26 +254,34 @@ async function sendToContentScript(data: NotificationData, profile: Awaited<Retu
 /**
  * 在活动 tab 内嵌入「周报概览卡片」，点击可跳转完整周报页
  */
+/**
+ * 在当前活动 tab 以「沉浸式悬浮卡」方式展示周报概览。
+ * 原则：绝对不自动打开新标签页。
+ * - 受限页面（chrome://）→ 直接返回 false，等下次正常页面触发
+ * - 注入失败 → 返回 false，跳过本次（用户可从 Popup 手动入口查看）
+ * 用户主动点击卡片中「查看完整周报」时，才会打开 report.html（OPEN_WEEKLY_REPORT 消息）
+ */
 async function sendWeeklyReportCard(profile: Awaited<ReturnType<typeof storage.getUserProfile>>): Promise<boolean> {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) {
-      // 无活动 tab，直接打开周报新标签页
-      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
-      return true;
+      console.log('[GreenBreathe] No active tab for weekly report card, skipping');
+      return false;
     }
     const url = tab.url || '';
     if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
         url.startsWith('about:') || url.startsWith('edge://') ||
         url.startsWith('devtools://') || url.startsWith('view-source:')) {
-      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
-      return true;
+      console.log('[GreenBreathe] Restricted page, skipping weekly report card');
+      return false;
     }
 
     const msg = {
       type: 'SHOW_WEEKLY_REPORT_CARD',
       cardDisplayDuration: profile.cardDisplayDuration ?? 20,
     };
+
+    // Step 1: 尝试向已有 content script 发送消息
     try {
       const response = await chrome.tabs.sendMessage(tab.id, msg);
       if (response?.success === true) return true;
@@ -281,22 +289,23 @@ async function sendWeeklyReportCard(profile: Awaited<ReturnType<typeof storage.g
       console.log('[GreenBreathe] Content script not loaded for weekly report, injecting...');
     }
 
+    // Step 2: 注入 content script
     try {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-    } catch {
-      // 注入失败：fallback 直接打开周报页
-      await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
-      return true;
+    } catch (injectErr) {
+      console.log('[GreenBreathe] Cannot inject content script for weekly report:', injectErr);
+      return false;
     }
+
+    // Step 3: 等待初始化，再次发送
     await new Promise(r => setTimeout(r, 300));
     try {
       const response = await chrome.tabs.sendMessage(tab.id, msg);
-      if (response?.success === true) return true;
-    } catch { /* swallow */ }
-
-    // 最终 fallback
-    await chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
-    return true;
+      return response?.success === true;
+    } catch {
+      console.log('[GreenBreathe] Weekly report card injection succeeded but message failed');
+      return false;
+    }
   } catch (e) {
     console.error('[GreenBreathe] sendWeeklyReportCard error:', e);
     return false;
